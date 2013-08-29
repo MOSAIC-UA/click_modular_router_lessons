@@ -1,0 +1,184 @@
+\documentclass{beamer}
+
+\usetheme{PATS}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cmap}
+\usepackage{listings}
+
+\setbeamercovered{transparent}
+
+\title{Layered Protocols in Click}
+\subtitle{Implementation of Layered Protocols with Click Modular Router}
+\author{Bart Braem \and Michael Voorhaen}
+\institute{
+		University of Antwerp\\
+		IBBT - PATS Research Group
+}
+\date{October 2011}
+
+\logo{\includegraphics[height=1cm]{figures/pats_logo.jpg}}
+
+
+\begin{document}
+
+
+\begin{frame}[t]
+\titlepage
+\end{frame}
+
+
+\section{ISO/OSI Reference Model}
+
+\frame{
+  \frametitle{Click in ISO/OSI Reference Model}
+	\begin{figure}[t]
+		\centering
+		\includegraphics[width=8cm]{figures/clickinosimodel.pdf}
+	\end{figure}
+}
+
+\section{IP Router}
+
+\frame{
+\frametitle{IP Router}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=11cm]{figures/iprouter.pdf}
+\end{figure}
+}
+
+\frame{
+\frametitle{Input Path}
+\begin{minipage}[t]{0.5\linewidth}
+
+\begin{itemize}
+	\item Handles ARP
+	\item Classifies
+	\begin{itemize}	
+		\item ARP Requests
+		\item ARP Replies
+		\item Data
+	\end{itemize}		
+\end{itemize}
+
+\end{minipage}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=6cm]{figures/inputpath.pdf}
+\end{figure}
+\end{minipage}
+
+}
+
+\frame{
+\frametitle{Routing Path}
+\begin{minipage}[t]{0.5\linewidth}
+
+\begin{itemize}
+	\item Remove Ethernet Header
+	\item Check if the IP header is correct
+	\item Routes the packet
+	\begin{itemize}	
+		\item local
+		\item forwarding path
+	\end{itemize}		
+\end{itemize}
+
+\end{minipage}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/routingpath.pdf}
+\end{figure}
+\end{minipage}
+}
+
+\frame{
+\frametitle{Output Path}
+\begin{minipage}[t]{0.5\linewidth}
+
+\begin{itemize}
+	\item Check if the packet should be forwarded
+	\item If not send an ICMP error
+	\item Routes the packet
+	\begin{itemize}	
+		\item GW
+		\item TTL exceeded
+		\item Fragmentation
+	\end{itemize}		
+	\item else forward the packet
+		\item via ARPQuerier
+\end{itemize}
+
+\end{minipage}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=6cm]{figures/outputpath.pdf}
+\end{figure}
+\end{minipage}
+}
+
+\frame{
+\frametitle{IP Router}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=11cm]{figures/iprouter.pdf}
+\end{figure}
+}
+
+\section{Respecting the Layered Model}
+\frame{
+\frametitle{Layered Moded in Click}
+\emph{"With great power comes great responsibility."}
+\begin{itemize}
+	\item Click receives raw ethernet frames from Layer 2 and handles all the processing up until it is handed to the higher layers.
+	\item Click can also handle Transport layer headers such as intercepting UDP and TCP packets making it possible to implement daemons inside Click.
+	\item The user is in charge of respecting the layered model, not Click.
+\end{itemize}
+Try to adhere to the ISO/OSI reference layer as much as possible. This makes sure that the packets you handle are what you expect.
+}
+
+\frame{
+\frametitle{Following the Layered Model}
+
+
+\begin{minipage}[t]{0.5\linewidth}
+	e.g. What if you need to capture UDP packets on port 7. 
+	\begin{itemize}
+		\item Capturing them after the Routing Path decides the packet has reached its destination.
+		\item This ensures that you capture valid IP packets with the correct destination.
+	\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/routingpath.pdf}
+\end{figure}
+\end{minipage}
+}
+
+\frame{
+\frametitle{Breaking the Layered Model}
+\begin{minipage}[t]{0.5\linewidth}
+	If you would capture the packet directly from the input (interface):
+	\begin{itemize}
+		\item You could be processing the wrong packet the wrong way (e.g. treat an ARP message as UDP).
+		\item You would have to add all these checks yourself in Click or even worse inside your own element.
+	\end{itemize}
+\end{minipage}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/inputpath.pdf}
+\end{figure}
+\end{minipage}
+
+}
+
+\end{document}
+
+

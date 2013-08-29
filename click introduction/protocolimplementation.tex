@@ -1,0 +1,169 @@
+\documentclass{beamer}
+
+\usetheme{PATS}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cmap}
+\usepackage{listings}
+
+\setbeamercovered{transparent}
+
+\title{Click Protocol Implementations}
+\subtitle{Implementing Protocols with Click Modular Router}
+\author{Bart Braem \and Michael Voorhaen}
+\institute{
+		University of Antwerp\\
+		IBBT - PATS Research Group
+}
+\date{October 2011}
+
+\logo{\includegraphics[height=1cm]{figures/pats_logo.jpg}}
+
+
+\begin{document}
+
+
+\begin{frame}[t]
+\titlepage
+\end{frame}
+
+
+\section*{Outline}
+
+\frame{
+  \frametitle{Outline}
+  \tableofcontents[subsectionstyle=hide]
+}
+\section{Introduction} % (fold)
+\label{sec:introduction}
+\frame{
+\frametitle{Disclaimer}
+Everyone has his/her own coding style
+
+This presentation outlines our experiences with coding in Click
+
+Strong suggestions towards our students, may be helpful to others
+}
+
+% section introduction (end)
+
+% section osi_layers_model_in_click (end)
+\section{Packet Parsing/Generation} % (fold)
+\label{sec:}
+
+\frame{
+\frametitle{Click Software Design}
+Click has two classes that are important for creating new protocols:
+\begin{itemize}
+	\item Packet: handles allocation of memory and access to the raw data.
+	\item Element: an abstract class whose children implement specific, preferably bite-sized, actions with Packets.
+\end{itemize}
+Protocols are implemented using these basic building blocks configured in the Click script. Your design should take this into account. 
+
+\textbf{Don't start from scratch and try to force your own design into Click.}
+}
+
+\frame{
+\frametitle{Working with Packet Formats}
+Packet formats == structs
+\begin{itemize}
+	\item structs are a typical C concept, very low level
+	\item tempting to improve this by wrapping the packets in objects 
+	\item attractive to create packet factories
+\end{itemize}
+Do not do this, very large overhead:
+\begin{itemize}
+	\item In terms of memory and computation (allocate objects, create and delete objects)
+	\item In terms of code base
+\end{itemize}
+Use the plain structs
+\begin{itemize}
+	\item Requires getting used to
+	\item Straightforward: most packet manipulation is low-level anyway 
+\end{itemize}
+}
+
+\frame{
+\frametitle{What about the special cases?}
+If you really need globally available methods for the struct
+\begin{itemize}
+	\item define procedure in file containing the struct (mind the include guards!)
+\end{itemize}
+}
+
+% section  (end)
+\section{General Click Patterns}
+\frame{
+\frametitle{The Infobase}
+Click architecture is centered around elements, however sometimes information has to be shared between elements
+
+Solutions:
+\begin{itemize}
+	\item Global variables
+	\item Handler calls
+	\item Calls on public element methods
+	\item \textbf{Create an Infobase element}
+\end{itemize}
+Infobase:
+\begin{itemize}
+	\item Multiple Elements need to have access to a shared data source
+	\item Infobase Element is only responsible for sharing 
+	\item No input or output ports
+	\item Passed to Elements who need it using the configuration
+\end{itemize}
+
+}
+\frame{
+\frametitle{The source-responder pattern}
+Generating packets can be hard, especially when packet formats must adhere to a standard. Difficult to debug, as packets can get lost in routing complexity.
+
+Solution:
+\begin{itemize}
+	\item Debug bit-by-bit, manually
+	\item Introduce a source element, only responsible for packet generation
+	\item MySource -> ToDump(my.dump) -> Discard
+\end{itemize}
+
+Packet generation logic is now in one place, and can easily be tested. Next create a packet responder that parses the packet and responds. When tested plug the elements into a larger Click script.
+
+\emph{Other names: generator-receiver, sender-processor}
+}
+
+\frame{
+\frametitle{Testing generated packets}
+Multiple suggested possibilities:
+\begin{itemize}
+	\item Avoid plain Print
+	\item Use ToDump, a good generator will allow for easy dumping!
+	\item Take a look at the testie framework (in /test) for Click standard testing
+\end{itemize}
+Beware of testing overhead!
+}
+\section{General Click Anti-patterns}
+\frame{
+\frametitle{God Elements}
+A single element which implements an entire protocol
+
+Not a good idea:
+\begin{itemize}
+	\item Large amount of code in one file
+	\item No reuse of existing Click elements
+	\item Protocol logic becomes hard to debug
+	\item Cooperative development more difficult   
+\end{itemize}
+}
+\frame{
+\frametitle{Other anti-patterns}
+\begin{itemize}
+	\item Reinventing the wheel, especially for checksums
+	\item Packet and other factories
+	\item Over-engineering
+\end{itemize}
+Conclusion: remain low level!
+}
+
+% section example_ntp_echo_daytime (end)
+\end{document}
+
+

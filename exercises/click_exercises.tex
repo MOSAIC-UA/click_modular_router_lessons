@@ -1,0 +1,62 @@
+\documentclass[a4paper]{article}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+
+\hyphenpenalty=5000
+\tolerance=1000
+
+\author{Bart Braem --- Michael Voorhaen}
+\title{Click Exercises}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+
+\item Use the existing ping-5.click script and add the following features by changing the configuration of one element:
+
+\begin{enumerate}
+\item Only 20 pings are sent.
+\item Pings are sent at a rate of 5 packets per second.
+\end{enumerate}
+
+
+\item Use the existing ping-5.click script and add the following features by adding 1 element to the Router compound element:
+
+\begin{enumerate}
+\item Print the packet contents as they pass by.
+\item Packets received from the network should have there IP time-to-live decreased.
+\item Packets received from the network with an IP id larger than 10 should be dropped.
+\item Collect information about the historical packet count and rate and access those data with a handler call.
+\end{enumerate}
+
+\item Use the existing ping-5.click script and add the following features by adding several elements outside the Router compound element:
+
+\begin{enumerate}
+\item Echo requests are output at a rate of 5 packets per second and are bandwidth shaped to 2 packets per second.
+\item Generate a random UDP encapsulated stream that flows over the same virtual network and is discarded at the receiver. Verify that the pings still work.
+\item Expand the previous solution to give strict priority to ping packets: apply bandwidth shaping again and try to ensure that whenever sending a packet ping packets will be sent if they are available.
+\item When 5 packets have been generated, the packet interval is set to 10ms.
+\end{enumerate}
+
+\item Use the existing ping-5.click script and write new elements to support the following features:
+
+\begin{enumerate}
+\item Add the SimplePushElement (get it from the ZIP file).
+\item Add your own Null element. So do nothing with packets, just pass them on. Make a push, pull and agnostic version.
+\item Complete the previous element by making sure users can only specify an empty configuration string when using this element in Click scripts.
+\item Configure the ICMPPingSource element to send the ICMP packets from an incorrect \textit{source} address, e.g. 1.2.3.4. Test the script: replies should not be received. Fix the situation by creating an element that will correct the source address. Mind the IP header checksums, verify with Wireshark!
+\item Configure the ICMPSource element to send the ICMP packets to an incorrect \textit{destination} address. Create an element that will correct the IP destination address. Mind the IP header checksums! Hint: look at SetIpAddress, what does it do?
+\item Write a queue element from scratch. The queue outputs packets on a second port when it overflows, the capacity of the queue must be configurable. Test with a simple script.
+\item Use the existing ICMP generators to generate a PCAP dump file with some Echo Requests and their replies in it. Write your own ICMP Echo Request generator based on that dump, both pull based and timer based. Do not start from existing ICMP generator element. Analyze your generated packets with Wireshark. Mind the checksums!
+\item Simulate your own \emph{traceroute}: generate a random UDP encapsulated stream and set a small IP time-to-live e.g. 10. Forward that packet through a number of compound elements, which decrease the TTL and send back an ICMP TTL exceeded packet if the TTL is 0. For the ICMP packet format do a \emph{traceroute} and study the output in Wireshark.
+\end{enumerate}
+
+\item Study the Click IP router in the Click thesis chapters 5.1 and 5.2.
+
+\end{enumerate}
+
+\end{document}

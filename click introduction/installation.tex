@@ -1,0 +1,102 @@
+\documentclass{beamer}
+
+\usetheme{PATS}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cmap}
+\usepackage{listings}
+\setbeamercovered{transparent}
+
+\newcommand{\clickversion}{2.0.1}
+
+\title{Click Installation}
+\subtitle{Installation of Click Modular Router}
+\author{Bart Braem \and Michael Voorhaen}
+\institute{
+		University of Antwerp\\
+		IBBT - PATS Research Group
+}
+\date{October 2011 - Click \clickversion}
+
+\logo{\includegraphics[height=1cm]{figures/pats_logo.jpg}}
+
+
+\begin{document}
+\lstset{breakatwhitespace=true}
+\lstset{language=C++}
+\lstset{columns=fullflexible}
+\lstset{keepspaces=true}
+\lstset{breaklines=true,
+        tabsize=3, 
+        showstringspaces=false,
+extendedchars=\true,
+basicstyle=\ttfamily}
+
+
+\begin{frame}[t]
+\titlepage
+\end{frame}
+
+
+\section*{Outline}
+
+\frame{
+  \frametitle{Outline}
+  \tableofcontents[subsectionstyle=hide]
+}
+
+\section{Requirements}
+\frame{
+\frametitle{Requirements}
+\begin{itemize}
+	\item Unix system: Linux works in userlevel and kernelspace, FreeBSD has a port (only userlevel works)
+	\item A recent GNU C++ compiler  $>=$ 3.0
+	\item GNU Make
+	\item For user-level Click: x86 or x86\_64
+	\item Not sure of the requirements? The ./configure script will tell you
+\end{itemize}
+}
+\section{Installation}
+\begin{frame}[fragile]
+\frametitle{Download and configure}
+\begin{itemize}
+	\item Version \clickversion~ is used: \url{http://www.read.cs.ucla.edu/click/click-\clickversion.tar.gz }
+	\item For bleeding-edge development: git
+	\item Untar Click in some directory: \lstinline!tar xzf click-\clickversion.tar.gz!
+	\item Configure it, disabling the kernel module and enable your own local elements:
+	\begin{lstlisting}
+cd click-\clickversion
+./configure --disable-linuxmodule --enable-local
+\end{lstlisting}
+\end{itemize}
+
+\end{frame}
+\begin{frame}[fragile]
+	\frametitle{Make and install}
+\begin{itemize}
+	\item Make Click (fast), inside the click-\clickversion~ directory: \lstinline!make -j2!
+	\item Click will now run: \lstinline!userlevel/click conf/test.click!
+	\item Output should be five times \\ \lstinline!ok:   40 | 45000028 00000000 401177c3 01000001 02000002 13691369!
+	\item Do not run make install, every time you change elements you must do a make install, as root!
+\end{itemize}	
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Adding own elements}
+All elements are stored in /elements/ directory
+\begin{itemize}
+	\item Yours should be put in elements/local
+	\item Put the .hh and .cc files there
+\end{itemize}
+To make those elements available:
+\begin{lstlisting}
+make elemlist
+make
+\end{lstlisting}
+Notice new elements being compiled, solve any compilation problems and use your elements
+\end{frame}
+
+\end{document}
+
+

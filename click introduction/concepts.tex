@@ -1,0 +1,412 @@
+\documentclass{beamer}
+
+\usetheme{pats}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cmap}
+\usepackage{listings}
+\usepackage{verbatim}
+\setbeamercovered{transparent}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\title{Click Concepts}
+\subtitle{Click Modular Router Concepts and Philosophy}
+\author{Bart Braem \and Michael Voorhaen}
+\institute{
+		University of Antwerp\\
+		IBBT - PATS Research Group
+}
+\date{October 2011}
+
+\logo{\includegraphics[height=1cm]{figures/pats_logo.jpg}}
+
+
+\begin{document}
+\lstset{breaklines}
+
+\begin{frame}[t]
+\titlepage
+\end{frame}
+
+
+\section*{Outline}
+
+\frame{
+  \frametitle{Outline}
+  \tableofcontents[subsectionstyle=hide]
+}
+
+\section{Background}
+\frame{
+\frametitle{Network coding}
+\begin{itemize}
+	\item Inside router: packets being processed while flowing through routers
+	\item Classical network software: operate on packets, procedural programming style
+	\item Code reuse? Lots of returning concepts
+\end{itemize}
+}
+\frame{
+\frametitle{Click Modular Router}
+\begin{itemize}
+	\item Extensible toolkit for writing packet processors
+	\item PhD thesis dr.~Eddie Kohler (MIT)
+	\item Architecture centered on elements
+	\begin{itemize}
+		\item Small building blocks
+		\item Perform simple operations e.g. decrease TTL
+	\end{itemize}
+	\item Click routers
+	\begin{itemize}
+		\item Directed graphs of elements
+	\end{itemize}
+\end{itemize}
+}
+\frame{
+\frametitle{Why not a daemon?}
+\begin{itemize}
+	\item I'll just code it as a daemon.
+	\begin{itemize}
+		\item How modular is your result?
+	\end{itemize}
+	\item Designing elements is hard, in the beginning
+	\begin{itemize}
+		\item Follow the framework, it's there already
+	\end{itemize}
+	\item Other alternatives:
+	\begin{itemize}
+		\item System calls are hard
+		\item Which libraries for the packet formats?
+		\item The Linux kernel API is hard
+		\item Let's not talk about kernel development
+	\end{itemize}
+\end{itemize}
+}
+\frame{
+\frametitle{This has already been done}
+\begin{itemize}
+	\item So have linked lists
+	\begin{itemize}
+		\item Did you do real network programming before?
+		\item E.g., do you know how ARP really works?
+	\end{itemize}
+	\item Click is never used in real life
+	\begin{itemize}
+		\item (Neither is Oberon)
+		\item It works at layer 3, it is in the network
+		\item Being used in production at large companies, links with e.g. Google
+	\end{itemize}
+\end{itemize}
+}
+\section{Routers and Elements} % (fold)
+\label{sec:click_routers}
+
+\frame{
+\frametitle{Click Routers}
+\begin{itemize}
+	\item Router: Elements connected by edges
+	\item Output ports to input ports
+	\item Describes possible packet flows
+	\item \lstinline!FromDevice(eth0)->Counter->Discard;!
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/graph.pdf}
+\end{figure}
+}
+\frame{
+\frametitle{Element Classes}
+\begin{itemize}
+	\item Class: element type (reuse!)
+	\item Configuration string: initializes this instance
+	\item Input port(s): Interface where packets arrive, triangles 
+	\item Output port(s): Interface where packets leave, squares
+	\item Instances can be named: myTee :: Tee
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/element.pdf}
+\end{figure}
+}
+\frame[allowframebreaks]{
+\frametitle{Element ports}
+Push port:
+\begin{itemize}
+	\item Filled square or triangle
+	\item Source initiates packet transfer: event based packet flow
+\end{itemize}
+Pull port:
+\begin{itemize}
+	\item Empty square or triangle
+	\item Destination initiates packet transfer
+	\item Used with polling, scheduling, ...
+\end{itemize}
+Agnostic port:
+\begin{itemize}
+	\item Square-in-square or triangle-in-triangle
+	\item Becomes push or pull (inner square/triangle filled or empty)
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=8cm]{figures/pushpull.pdf}
+\end{figure}
+}
+\frame[allowframebreaks]{
+\frametitle{Push-pull violations}
+Push port 
+\begin{itemize}
+	\item has to be connected to push or agnostic port
+	\item Conversion from push to pull with push-to-pull element
+	\item E.g. queue
+\end{itemize}
+Pull port
+\begin{itemize}
+	\item Has to be connected to pull or agnostic port
+	\item Conversion from pull to push with pull-to-push element
+	\item E.g. unqueue
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=8cm]{figures/pushpullviolations.pdf}
+\end{figure}
+
+}
+\frame{
+\frametitle{Compound elements}
+\begin{itemize}
+	\item Group elements in larger elements
+	\item Configuration with variables
+	\item Pass configuration to the internal elements, can be anything (constant, integer, elements, IP address, ...)
+	\item Motivates reuse
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/compound.png}
+\end{figure}
+}
+% section click_routers (end)
+\section{Implementation Philosophy} % (fold)
+\label{sec:implementation}
+\frame{
+\frametitle{Element classes - Routers}
+Element classes?
+\begin{itemize}
+	\item Elements (actually element classes): C++ classes
+	\item Element instantations: C++ objects
+\end{itemize}
+Click Routers:
+\begin{itemize}
+	\item Click router configurations (or short Click routers): text files
+	\item parsed when starting Click, Click builds object graph of elements
+\end{itemize}
+}
+\begin{frame}[fragile]
+\frametitle{Click Graphs}
+Text files describing the Click graph:
+\begin{itemize}
+	\item Elements with their configurations
+	\item Compound elements
+	\item Connections between elements
+\end{itemize}
+\begin{lstlisting}
+	src :: FromDevice(eth0); ctr :: Counter; 
+	sink :: Discard; 
+	src -> ctr; ctr -> sink;
+\end{lstlisting}
+or
+\begin{lstlisting}
+FromDevice(eth0) -> Counter -> Discard;
+\end{lstlisting}
+\end{frame}
+% 
+% 
+
+\begin{frame}[fragile]
+\frametitle{Input and output ports}
+Identified by number (0,1,..)
+\begin{itemize}
+	\item Input port:	\lstinline!-> [nr1]Element ->!
+	\item Output port: \lstinline!-> Element[nr2] ->!
+	\item  Both: \lstinline!-> [nr1]Element[nr2] ->!
+	\item  Only one port: number can be omitted
+\end{itemize}
+Motivates instance naming
+\begin{lstlisting}
+mypackets::IPClassifier(dst host $myaddr,-);
+FromDevice(eth0) -> mypackets;
+mypackets[0]-> Print(mine)->[0]Discard;
+mypackets[1]-> Print("the others") -> Discard;
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Compound elements in Click scripts}
+\begin{lstlisting}
+elementclass DumbRouter { $myaddr |
+	mypackets :: IPClassifier(dst host $myaddr,-);
+	input[0]-> mypackets;mypackets[0]-> [1]output;
+	mypackets[1]-> [0]output;
+}
+u :: DumbRouter(1.2.3.4);
+FromDevice(eth0)-> u;
+u[0]-> Discard;
+u[1]-> ToDevice(eth0);
+\end{lstlisting}
+\end{frame}
+
+\frame{
+\frametitle{Element Configuration}
+Listed in click script
+\begin{itemize}
+	\item First required arguments
+	\item Then optional arguments
+	\item Then arguments by keyword (after keyword)
+\end{itemize}
+Lots of data types supported
+\begin{itemize}
+	\item Integers 
+	\item Strings e.g. "data"        
+	\item IP addresses 143.129.77.30
+    \item Elements
+\end{itemize}
+}
+\frame{
+\frametitle{Element Configuration Examples}
+\begin{itemize}
+	\item SimpleElement("data")
+	\item SimpleElement("data",ACTIVE false)
+	\item SimpleElement("moredata",800)
+    \item SimpleElement("data",800,DATASIZE 67, SOURCE 1.2.3.4)
+\end{itemize}
+}
+\frame{
+\frametitle{Packets}
+Packet consists of payload and annotations, payload:
+\begin{itemize}
+	\item raw bytes (char*)
+	\item  Access with struct*
+\end{itemize}
+Annotations: metadata to simplify processing, ``post-its''
+\begin{itemize}
+	\item  E.g. start of IP header or TCP header
+	\item  Paint annotations
+	\item  User defined annotations
+\end{itemize}
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=5cm]{figures/annotations.pdf}
+\end{figure}
+}
+% section implementation (end)
+\section{Handlers} % (fold)
+\label{sec:handlers}
+\frame{
+\frametitle{Handlers}
+Like function calls to an element
+\begin{itemize}
+	\item ReadHandler: request a value from an element
+	\item WriteHandler: pass a string to an element
+	\item (There is no ReadWriteHandler: you can't call a ReadHandler with arguments)
+\end{itemize}
+Can be called from other elements or through socket
+\begin{itemize}
+	\item Take a look at Pokehandlers!
+\end{itemize}
+}
+% \begin{frame}[fragile]
+% Start click 
+% \begin{verbatim}
+% click –p <port_nr> <click_script>
+% click –p 10000 somescript.click
+% \end{verbatim}
+% Connect to click with telnet
+% \begin{verbatim}
+% telnet localhost 10000
+% quit
+% read list // displays all elements
+% \end{verbatim}
+% See SocketHandler element (automatically added)
+% \begin{verbatim}
+% read <elementname>.<handlername>
+% read rt.table
+% write <elementname>.<handlername> <values>
+% write arptable.insert 00:50:BA:85:84:B1 10.0.1.2
+% \end{verbatim}
+% \end{frame}
+% section handlers (end)
+\section{Running Click} % (fold)
+\label{sec:running_click}
+\frame{
+\frametitle{Use the source}
+\begin{itemize}
+	\item Source code: Open source
+	\item Runs on Linux, Mac OS X, BSD and partially in Windows
+	\item Makefile based
+	\item Very little external dependencies (in-kernel)
+\end{itemize}
+}
+\frame{
+Kernel module
+\begin{itemize}
+	\item Completely overrides Linux routing
+	\item High speed, requires root permissions
+	\item Crashing Click = crashing kernel = crashing system
+\end{itemize}
+Userlevel
+\begin{itemize}
+	\item Runs as a daemon on a Linux system
+	\item Easy to install and still fast
+	\item Recommended for this course
+\end{itemize}
+nsclick
+\begin{itemize}
+	\item Runs as a routing agent within the ns-2 network simulator
+	\item Multiple routers on 1 system
+	\item Difficult to install but less hardware needed
+\end{itemize}
+}
+% \frame{
+% Send packets to and receive packets from the network
+% Connects to the network interface
+% Delivered to Click at FromDevice(ethX)
+% Sent to system by ToDevice(ethX)
+% Send packets to and receive packets from the system 
+% With a virtual tun/tap interface
+% Set the default route to the tun/tap device to make sure traffic passes through the Click route
+% Warning: Linux routing is still working
+% Addresses (IP and MAC) must be correct
+% Make sure IPs from Click are different from system Ips
+% 
+% }
+% section running_click (end)
+
+\section{References} % (fold)
+\label{sec:references}
+\frame{
+\frametitle{References}
+\begin{itemize}
+	\item Click website: \url{http://www.read.cs.ucla.edu/click/}
+	\item Element documentation (by name or category)
+	\item Programming Concepts
+	\item Doxygen documentation ('Internals documentation')
+\end{itemize}
+}
+\frame{
+\frametitle{Click PhD thesis}
+
+PhD thesis: comprehensive documentation of every concept
+
+Interesting chapters: 
+\begin{itemize}
+	\item Introduction
+	\item Architecture: elements, packets, connections, push and pull, element implementation
+	\item Language: syntax, configuration strings, compound elements
+\end{itemize}
+
+Click mailinglist: \url{https://amsterdam.lcs.mit.edu/mailman/listinfo/click} (Large source of information, mainly for Click developers)
+}
+% section references (end)
+\end{document}
+
+
