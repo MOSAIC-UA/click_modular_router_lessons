@@ -4,6 +4,7 @@ Click Modular Router lessons
 This repository contains class material to learn about Click Modular Router, see http://www.read.cs.ucla.edu/click
 
 Contents:
+
 click introduction:
 - concepts.tex contains slides for the Click basics, the perfect starting point
 - installation.tex contains slides which explain how to install Click
