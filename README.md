@@ -9,15 +9,13 @@ click introduction:
 - installation.tex contains slides which explain how to install Click
 - coding.tex contains slides which explain coding your own Click elements
 - layeredprotocols.tex and protocolimplementation.tex explain how to implemented layered protocols in Click
-
-arpquerier:
-- explains the Click ARPQuerier element, which can be difficult to understand at first
+- arpquerier explains the Click ARPQuerier element, which can be difficult to understand at first
 
 exercises:
 - a set of exercises based on the slides above
 
-ping:
-- simple ping scripts, which go from a very simple script to a full blown IP router with ICMP functionality
+examples:
+- ping: simple ping scripts, which go from a very simple script to a full blown IP router with ICMP functionality
+- simpleelements: very basic Click elements, perfect to start from
+- echo: a basic Echo implementation with Click
 
-simpleelements:
-- very basic Click elements, perfect to start from
