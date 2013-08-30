@@ -1,0 +1,1 @@
+(echo "write $1.send CONTENT '$3', TO $2"; sleep 1) | telnet localhost 1234
