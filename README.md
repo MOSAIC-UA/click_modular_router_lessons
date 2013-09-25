@@ -20,3 +20,5 @@ examples:
 - simpleelements: very basic Click elements, perfect to start from
 - echo: a basic Echo implementation with Click
 
+FAQ:
+- a simple Click Modular Router FAQ, oriented towards using this course material
