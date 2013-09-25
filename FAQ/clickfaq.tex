@@ -1,0 +1,561 @@
+\documentclass[a4paper]{article}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{listings}
+\lstset{language=C++,linewidth=\columnwidth,breaklines=true,basicstyle=\footnotesize,tabsize=2,frame=l,framesep=15pt,xleftmargin=20pt}
+
+\author{Bart Braem -- Johan Bergs -- Michael Voorhaen}
+\title{Click Frequently Asked Questions}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{General} % (fold)
+\label{sec:general}
+
+\subsubsection*{Which sources apart from this FAQ and the Click tutorial are good to learn more about Click?} % (fold)
+The Click Modular Router homepage \url{http://www.read.cs.ucla.edu/click/}. You can  also search the mailinglist with Google: \texttt{site:pdos.csail.mit.edu whatyousearch}.
+
+
+\subsubsection*{I have asked everyone and no one can help me with my Click problems. Can
+I now ask for help on the Click malinglist?}
+
+NO. Mail to bart.braem@uantwerpen.be and johan.bergs@uantwerpen.be, they'll
+help you. (If everyone mails simple questions to the mailinglist then
+the high quality of it will drop, with less and worse Click releases as
+a consequence.)
+
+\subsubsection*{I run Click on my 64bit AMD Opteron and configure fails saying that it
+does not know the machine `x86\_64-unknown'?}
+
+Replace `config.sub' by /usr/share/automake/config.sub and rerurn
+configure. This version is probably more up to date and will support
+your architecture.
+
+\subsubsection*{On my AMD Athlon64 I get a compilation error in aqm/red.cc about a cast
+from void* to int.}
+
+You are running Click-1.4.3! It was not yet ready for 64 bit systems,
+where this type of casts is not permitted. Replace the line with a
+correct cast:
+\begin{lstlisting}
+switch ((intptr* t)vparam) {
+\end{lstlisting}
+
+
+\subsubsection*{Click does not compile on (Open)Solaris}
+
+Click can be compiled on a Solaris system, with some tweaks to the
+makefile. But Fenix is very slow and the platform does not correspond to
+the reference platform. We strongly discourage you to compile on Fenix.
+
+% section general (end)
+
+
+\section{Scripts}
+
+\subsubsection*{ToDump writes to a PCAP dumpfile to analyse things in Wireshark, but nothing
+reasonable appears in the dumps?}
+
+The timestamp is not set on your packets. Using the SetTimeStamp element
+in front of the ToDump element will solve this.
+
+\subsubsection*{ToDump logs only a fraction of what passes through it?}
+
+Do not log with multiple ToDumps to the same file, as only one of them
+will write out passed packets properly. Use separate files for each
+ToDump element.
+
+\subsubsection*{I want to dump IP packets that are not encapsulated in Ethernet headers.
+How can I do that without encapsulating with fake Ethernet headers
+first?}
+
+Take a look at the ENCAP keyword for the ToDump element.
+
+\subsubsection*{I can't use that EtherSwitch or ListenEtherSwitch element, Click does
+not find it?}
+
+You should enable the etherswitch package while configuring Click, so:
+./configure ---disable-linuxmodule ---enable-local ---enable-etherswitch
+
+\subsubsection*{Is there syntax highlighting for click scripts in my favourite editor?}
+
+Most probably not directly, but syntax highlighting for C++ works well
+and makes reading click scripts sometimes a little bit easier.
+\emph{Hint:Kwrite/Kate allows you to expand and collapse compound
+elements, which can help reading large scripts.}
+
+\subsubsection*{So, you seem to need to run packets through something like CheckIPHeader
+in order to fill out the packet header annotations, correct? Do these
+annotations persist across elements that use ``uniquify'', things like
+Tee, etc.?}
+
+Yes.
+
+\subsubsection*{Are transport-layer annotations only filled out once you run through
+something like IPClassifier?}
+
+The CheckIPHeader annotation sets both the start-network-header
+annotation and the end-network-header==start-transport-header
+annotation.
+
+\subsubsection*{Why am I getting messages that no route is found for 0.0.0.0?}
+
+If packets do not contain an IP destination annotation, the routing
+table will try to route those packets based on an empty annotation,
+which equals trying to find a route for the address 0.0.0.0. So setting
+that annotation is crucial.
+
+\subsubsection*{I want to broadcast packets. Should I add a route for 255.255.255.255?}
+
+No! There are multiple reasons. Broadcast packets should not be routed
+at all, as they are link local. You will also know the L2 address, most
+probably Ethernet broadcast. Sending these packets to an ARPQuerier is
+not a good idea. Also, with routers with multiple interfaces, where are
+you going to send the packet to?
+
+\subsubsection*{I get messages that no route is found for 255.255.255.255?}
+
+Think about why you get these messages and take a good look at the
+previous question.
+
+\section{API}
+
+\subsubsection*{Where can I find a browsable version of the Click code?}
+
+The doxygen documentation is located at \url{http://www.read.cs.ucla.edu/click/doxygen/}
+
+\subsubsection*{How do I use a hashmap without compilation errors?}
+
+Do not forget to include bighashmap.cc in your sourcefile with the right
+arguments. It's best to do it at the bottom, so you get something like:
+
+\begin{lstlisting}
+// macro magic to use bighashmap
+#include <click/bighashmap.cc>
+#if EXPLICIT_TEMPLATE_INSTANCES 
+template class HashMap <Packet*, IPAddress*> ;
+#endif  
+CLICK_ENDDECLS  
+EXPORT_ELEMENT(MyElement)
+\end{lstlisting}
+
+
+\subsubsection*{Am I right in thinking that variables like ``network\_length()''
+represent the length from the beginning of the network header to the end
+of the packet?}
+
+Yes!
+
+\subsubsection*{Am I right in assuming there will never be any layering information
+(e.g., ethernet footer) after the data?}
+
+In practice yes, although this depends on your network layer.
+
+\subsubsection*{Does changing the annotation variables (e.g.,
+ip\_header()-\textgreater{}ip\_len) actually modify the packet itself?}
+
+Nope!
+
+\subsubsection*{How can I use multiple structs to construct a packet?}
+
+This is actually a matter of doing pointer arithmetics. Yes it's C, yes
+it's dangerous but yes you need it.\\ Say you have a packet format for
+the first part, defined in the struct FirstPart. The next part of the
+packet is defined in the struct NextPart.\\ When you want to create a
+packet with those headers encapsulated in Ethernet, IP and UDP, you will
+do almost the same as with a packet consisting of one struct. The only
+difference if the packet size and of course the way to access the
+data.
+
+\begin{lstlisting}
+int tailroom = 0;
+int packetsize = sizeof(FirstPart)+sizeof(SecondPart);
+int headroom = sizeof(click_eth)+sizeof(clickip)+sizeof(clickudp);
+WritablePacket* packet = Packet::make(headroom, 0,packetsize, tailroom);
+if (packet == 0 )return click_chatter( "cannot make packet!");
+memset(packet->data(), 0, packet->length());
+FirstPart* format = (FirstPart*) packet->data();
+format->something = somevalue;
+NextPart* nextformat = (NextPart*) (packet->data()+sizeof(FirstPart));
+nextformat->somethingelse = someothervalue; 
+\end{lstlisting}
+
+Note that a different way to achieve this is doing:
+\begin{lstlisting}
+struct NextPart{
+SomethingElseType somethingelse;
+}
+struct FirstPart{
+SomethingType something;
+// ...
+struct NextPart;
+}
+
+\end{lstlisting}
+
+This also works but it limits the flexibility, with the first solution
+you can easily manage dynamic packet sizes.
+
+\section{New elements}
+
+\subsubsection*{My new element is not found, it does not appear in elements.conf. What's
+going on?}
+
+Formatting: check if no space ended up before EXPORT\_ELEMENT. If that's
+the case Click ignores that macro so your element is not added.
+
+\subsubsection*{I have made a directory below elements to group a number of elements,
+but these elements are not found by Click.}
+
+Look in configure.in for ELEMENTS\_ARG\_ENABLE, these are the statements
+for the inclusion of element directories. Now add a line of the form:
+\begin{lstlisting}
+ELEMENTS\_ARG\_ENABLE(dirname, {[}comments{]}, NO)
+\end{lstlisting}
+The
+last option is either YES or No and determines whether the elements in
+your directory should be included by default when executing configure.
+\\ When you write YES here: execute configure again, if you do not want
+to include elements in the new directory then add the option
+---disable-dirname to your configure statement.\\ When you write NO
+here: execute configure again, but only when adding ---enable-dirname
+these elements will be included. Do not forget to execute \\
+\texttt{      make elemlist} again when adding more elements to the
+directory.
+
+\subsubsection*{I have moved an element or changed my directory structure and all of a
+sudden I get errors that Click can not find the required files for my
+element?}
+
+In that case you need to run a make clean and execute configure again,
+of course with the right options enabled or disabled. On top in
+`config.log' you can find which parameters you used last time, if you do
+not remember them anymore.
+
+\section{Compilation and link errors}
+
+\subsubsection*{Click does not want to compile any more, the compilation error is
+located in the `beetlemonkey' function?}
+
+Your compiler output will look similar to this:
+\begin{lstlisting}
+elements.cc: In function `Click::Element* beetlemonkey(unsigned int)':
+elements.cc:284: error: ISO C++ forbids declaration of `type name' with no type
+elements.cc:284: error: uninitialized const in `new' of `const int'
+elements.cc:284: error: cannot convert `const int*' to `Click::Element*' in return
+elements.cc:285: error: cannot convert `char**' to `Click::Element*' in return
+elements.cc:286: error: syntax error before `(' token
+elements.cc:287: error: ISO C++ forbids declaration of `type name' with no type
+elements.cc:287: error: uninitialized const in `new' of `const int'
+elements.cc:287: error: cannot convert `const int*' to `Click::Element*' in return
+elements.cc: In function `void click_export_elements()':
+elements.cc:582: error: syntax error before `(' token
+elements.cc:586: error: `class_name' undeclared (first use this function)
+elements.cc:586: error: (Each undeclared identifier is reported only once for each function it appears in.)
+elements.cc:586: error: syntax error before `::' token
+elements.cc:588: error: syntax error before `(' token
+elements.cc: In function `void click_unexport_elements()':
+elements.cc:906: error: syntax error before `(' token
+elements.cc:908: error: syntax error before `::' token
+elements.cc:909: error: syntax error before `(' token
+gmake[1]: *** [elements.o] Error 1 
+\end{lstlisting}
+
+In the header file of one of your elements the method `class\_name' is
+not defined on 1 line. This will work:\\
+
+\begin{lstlisting}
+const char* class_name() const { return "OLSRNeighborInfoBase"; }
+\end{lstlisting}
+The following will NOT work:\\
+\begin{lstlisting}
+const char* class_name() const
+{
+return "OLSRNeighborInfoBase";
+}
+\end{lstlisting}
+To solve this, you have to find out which element contains the errors,
+which is possible by analyzing the compiler output to elements.cc. You
+will see that something is wrong there. The element that causes the
+problems can be located quickly. Make sure `class\_name' is fixed and
+rerun \texttt{       make elemlist all} to recompile. After this those
+compiler errors should be gone.\\ \emph{Hint:Take care with editors that
+format your source code, they might not leave `class\_name' on 1 line.}
+
+\subsubsection*{My error looks like the previous one but I certainly have everything on
+1 line?}
+
+Check if no extra spaces appear after the () in EXPORT\_ELEMENT. That
+``macro'' is very sensitive.
+
+\subsubsection*{My error looks like the previous one but EXPORT\_ELEMENT is fine too.
+Click complains that certain elements do not exist?}
+
+Errors like this one:
+\begin{lstlisting}
+CXX elements.cc
+elements.cc: In function
+Click::Element* beetlemonkey(uintptr_t)':
+elements.cc:349: error:
+Print' has not been declared
+make[1]: *** [elements.o] Error 1
+\end{lstlisting}
+or
+\begin{lstlisting}
+elements.cc: In function 'Element* beetlemonkey(uintptr_t)':
+elements.cc:259: error: expected type-specifier before 'MyNullPush'
+elements.cc:259: error: cannot convert 'int*' to 'Element*' in return
+elements.cc:259: error: expected ';' before 'MyNullPush'
+elements.cc:259: error: 'MyNullPush' was not declared in this scope
+make[1]: *** [elements.o] Error 1
+\end{lstlisting}
+
+arise when an includeguard is not copied well from the original code.
+Most probably the same name is used in 2 elements. So check your
+\#ifndef and \#define macros.
+
+\subsubsection*{I get linkerrors about a vtable in one of my elements?}
+
+Errors like this one:
+\begin{lstlisting}
+../elements/pdhcp/pdhcp_discover_generator.cc:14: undefined reference to
+vtable for PDHCPDiscoverGenerator'
+../elements/pdhcp/pdhcpdiscovergenerator.cc:14: undefined reference to
+vtable for PDHCPDiscoverGenerator'
+collect2: ld returned 1 exit status
+\end{lstlisting}
+are caused by not declaring or defining your element constructor and
+destructor.
+
+\subsubsection*{gcc says the type ErrorHandler is not defined?}
+
+\begin{lstlisting}
+../elements/mobileiphelpers/dynamicetherencap.cc:47: error: invalid use of undefined type struct `ErrorHandler'
+\end{lstlisting}
+
+Add this include at the top of your code:
+\begin{lstlisting}
+#include <click/error.hh>
+\end{lstlisting}
+
+\subsubsection*{I get syntax error inside Click code, to be exact the includes?}
+
+Check whether you included click/config.h before everything else. If you
+did not, some macros are undefined with strange syntax errors as a
+consequence.
+
+\subsubsection*{I get strange constructor deprecation errors?}
+
+If you get errors like this:
+\begin{lstlisting}
+	../elements/local/simplepullelement.cc: In constructor 'SimplePullElement::SimplePullElement()':
+	../elements/local/simplepullelement.cc:8: warning: '_basector ' is deprecated (declared at ../include/click/element.hh:201)
+\end{lstlisting}
+
+then you are using old Click-1.4.3 element syntax. You should use the
+Click-1.6 syntax as described in the slides.
+
+\subsubsection*{gcc starts complaining about pcap libraries during linking?}
+
+You are using code that is compiled on a different machine, and the
+object files refer to libraries on different locations. A make clean
+should solve this.
+
+\section{Endianness - htonl/htonl - htons/ntohs - uintX\_t}
+
+\subsubsection*{Some fields in my packets are completely wrong, they seem reversed?}
+
+A network uses \emph{big endian}-byte order while e.g. the systems in
+the pc labs use \emph{little endian} as they run the intel architecture.
+You can use the following functions to convert integers in network-byte
+order:
+\begin{lstlisting}
+unsigned short htons(unsigned short hostshort); // 16 bit
+unsigned long htonl(unsigned long hostlong); //32-bit
+\end{lstlisting}
+
+To convert from network byte order to system byte order you can use:
+\begin{lstlisting}
+unsigned short ntohs(unsigned short networkshort); // 16 bit
+unsigned long ntohl(unsigned long networklong); //32-bit
+\end{lstlisting}
+
+More information on this subject is available at \url{http://en.wikipedia.org/wiki/Htons\#Endianness_in_networking}.
+
+\subsubsection*{What about uint\_64?}
+
+Try to avoid using that, if you need to then you should contact Bart and
+Johan.
+
+\subsubsection*{There is no such thing as an uint4\_t, and I need this for two adjacent
+fields?}
+
+Start from two uint8\_t fields and join those with bit-shifting and
+binary operators. Say you need the bit sequence for 01100001, then you
+could do this:
+
+\begin{lstlisting}
+	uint8_t a = 6; // (00000110)
+	uint8_t b = 1; // (00000001)
+	uint8_t result = (a << 4) & b;
+\end{lstlisting}
+
+\subsubsection*{I convert a number with htonl/htons and then it becomes 0?}
+
+Are you sure the datatype of the field you write in is not uint8? With
+uint16 you use htons and for uint32 it's htonl. (You should avoid using
+uint64 due to possible alignments issues.)
+
+\subsubsection*{Is this related: I can't get my UDP checksum correct, though everything
+is set correctly?}
+
+Are you sure you used htons to set the UDP header length? If not the
+checksum can never be set correctly and things will always fail, even if
+the checksum is calculated with SetUDPChecksum.
+
+\subsubsection*{Can't we avoid this endianness problem with uint8\_t (8bits), uint16\_t
+(16bits) etc?}
+
+Those are data types for unsigned integers with x bits. uint8\_t = 1
+byte, so endianness does not have any impact here. For all larger
+datatypes, so datatypes consisting of multiple bytes, you must take
+endianness into account. In the end, this is about how data is stored in
+memory, not about how data should be interpreted.
+
+\section{Segfaults and other runtime errors}
+
+\subsubsection*{My code crashes, how do I start debugging?}
+
+Take a look at valgrind, ddd and gdb. If you need more information about
+these tools just post a question or ask Bart and Johan.
+
+\subsubsection*{My elements configures without errors and still I get an unspecified
+error?}
+
+Most probably you get something like: While configuring `aninstance ::
+SomeElement': unspecified error Check if your configure method returns 0
+at its end, it has to return an integer you know.
+
+\subsubsection*{When running Click, it crashes on timer initialization code?}
+
+Are you sure you are initializing your timer in the initialize method of
+your element (as in the examples)? (Initializing your timers in the
+configure method of an element is a bad idea. Then the timer will look
+for its router object, which is not completely configured because it is
+configuring its elements with their configure method. To avoid this
+dependency circle you should initialize your timer in the elements
+initialize method and everything will work properly.)
+
+\subsubsection*{My element duplicates a packet (it is sent on multiple output ports or
+is used multiple times) and a little bit later I get segmentation
+faults?}
+
+If you duplicate packets you have to clone them too. Otherwise the
+memory assigned to the packet is freed multiple times, causing
+segfaults.
+
+\subsubsection*{My code is written using every possible standard, but still it crashes
+when generating the first packet?}
+
+In which method are you generating this packet? You should not generate
+any packets in the configure or initialize method. At that moment, the
+router is not yet initialized completely and other elements may still
+have to be initialized. This means things can and will crash.
+
+\section{Assignment and RFCs}
+
+\subsubsection*{I have seen that the KULeuven/\ldots{} has put a protocol implementation
+online. Can I use it? Or base my code on it?}
+
+You searched very well, but that's not the purpose of the project. By
+the way, that implemenation is complete, it can do more than the
+assignments requires. Making everything compatible with the scripts is a
+lot of work\ldots{} We know a lot of implemenations and we are actively
+looking for new ones, as with every project copying equals fraud and as
+a consequence reduces your points to 0.
+
+\subsubsection*{I changed an address in an IP header and now my UDP checksum is
+incorrect?}
+
+The UDP RFC states:
+
+\begin{quote}
+Checksum is the 16-bit one's complement of the one's complement sum of a
+pseudo header of information from the IP header, the UDP header, and the
+data, padded with zero octets at the end (if necessary) to make a
+multiple of two octets. The pseudo header conceptually prefixed to the
+UDP header contains the source address, the destination address, the
+protocol, and the UDP length. This information gives protection against
+misrouted datagrams. This checksum procedure is the same as is used in
+TCP.
+\end{quote}
+
+(So far for the theoretical ISO/OSI layers) So add a SetUDPChecksum
+element after changing IP addresses.
+
+\section{Hints for the project}
+
+\subsubsection*{A number of things might be useful to know:}
+
+\begin{itemize}
+\item
+  ask questions about Click and the RFC as soon as possible
+\item
+  it's not good if you are stuck too long tell us about problems as soon
+  as possible
+\item
+  also if there are tensions in your project group use the Click code as
+  much as possible
+\item
+  almost never do you have to change existing elements, mail us if you
+  think you have to
+\item
+  for the final evaluation everything has to compile, run without
+  crashing and work conform the RFC, if software does not compile or run
+  we can't give you points!
+\item
+  if you prepare the final tar.gz, test it on a different machine before
+  testing, one header file is easy to forget
+\item
+  etherswitch is already included in Click, don't send that element to
+  us
+\item
+  make sure you can work with handlers and write down commonly used
+  handlers in a file so you don't have to retype them again and again
+\item
+  avoid hardcoded constants like 0x22 throughout your code, define it
+  once (with a macro or a constant) to make things much more clear
+\item
+  use Clicks headers for IP, UDP, \ldots{}
+\end{itemize}
+
+To highlight this one again: use existing Click code where you can, even
+if the task is very small. Nothing is easier than pushing out a packet
+and having the small task done by another element. You are sure that it
+works and don't need to wonder whether e.g. you first need to set a
+checksum to 0 to calculate it. So use existing code to:
+
+\begin{itemize}
+\item
+  encapsulate a packet (dynamic destination? control the Encap element
+  with handlers!)
+\item
+  update checksums (UDP, IP, \ldots{}) or set them after packet creation
+\item
+  strip some bytes, at the front or at the back of the packet
+\item
+  set headers
+\item
+  modify special headers, then use Click's structs instead of yours
+\end{itemize}
+
+Hint: tunneling is possible without almost any new code.
+
+\end{document}
