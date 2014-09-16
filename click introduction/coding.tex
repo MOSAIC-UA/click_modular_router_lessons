@@ -11,9 +11,9 @@
 
 \title{Click Coding}
 \subtitle{Coding with Click Modular Router}
-\author{Bart Braem \and Michael Voorhaen}
-\institute{University of Antwerp\\IBBT - PATS Research Group}
-\date{October 2011}
+\author{Bart Braem \and Johan Bergs}
+\institute{University of Antwerp\\iMinds - MOSAIC Research Group}
+\date{October 2014}
 
 \logo{\includegraphics[height=1cm]{figures/pats_logo.jpg}}
 
@@ -27,8 +27,7 @@
 \lstset{breaklines=true,
         tabsize=3, 
         showstringspaces=false,
-extendedchars=\true,
-basicstyle=\ttfamily}
+extendedchars=\true}
 
 \begin{frame}[t]
 \titlepage
@@ -47,10 +46,11 @@ basicstyle=\ttfamily}
 \label{sub:writing_custom_elements}
 \frame{
 \frametitle{Do it yourself}
-Let's make an example element: 1 input, 1 output, Push
-
-Configure a packet size threshold, larger: drop packet
-
+Let's make an example element
+\begin{itemize}
+\item 1 input, 1 output, Push
+\item Configure a packet size threshold, if larger: drop packet
+\end{itemize}
 Download the source code online to avoid copy errors at \url{http://www.pats.ua.ac.be/software/click}
 }
 
@@ -74,31 +74,33 @@ const char *processing() const
 \frametitle{Element header}
 Necessary in the source file:
 \begin{itemize}
-	\item Include click/config.hh \textbf{first}!
+	\item Include \!click/config.hh! \textbf{first}!
 	\item \lstinline!CLICK_DECLS! macro
 	\item \lstinline!CLICK_ENDDECLS! macro
 	\item \lstinline!EXPORT_ELEMENT! macro
-	\item Implementations of the methods
+	\item Implementation of the methods
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{simplepushelement.hh}
-\begin{lstlisting}[basicstyle=\ttfamily,\footnotesize]
+\begin{lstlisting}[basicstyle=\scriptsize]
 #ifndef CLICK_SIMPLEPUSHELEMENT_HH
 #define CLICK_SIMPLEPUSHELEMENT_HH
 #include <click/element.hh>
+
 CLICK_DECLS
 class SimplePushElement : public Element { 
   public:
     SimplePushElement();
     ~SimplePushElement();
-    const char *class_name() const { return "SimplePushElement";}
+    const char *class_name() const { return "SimplePushElement"; }
     const char *port_count() const { return "1/1"; }
     const char *processing() const { return PUSH; }
     int configure(Vector<String>&, ErrorHandler*);
-    void push(int, Packet *);
-  private:     uint32_t maxSize;
+    void push(int, Packet*);
+  private:
+    uint32_t maxSize;
 };
 CLICK_ENDDECLS
 #endif
@@ -107,14 +109,15 @@ CLICK_ENDDECLS
 
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{simplepushelement.cc}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}[basicstyle=\scriptsize]
 #include <click/config.h>
 #include <click/confparse.hh>
 #include <click/error.hh>
 #include "simplepushelement.hh"
+
 CLICK_DECLS
-SimplePushElement::SimplePushElement(){}
-SimplePushElement::~SimplePushElement(){}
+SimplePushElement::SimplePushElement() {}
+SimplePushElement::~SimplePushElement() {}
 
 int SimplePushElement::configure(Vector<String> &conf, ErrorHandler *errh) {
   if (cp_va_kparse(conf, this, errh, "MAXPACKETSIZE", cpkM, cpInteger, &maxSize, cpEnd) < 0) return -1;
@@ -123,7 +126,7 @@ int SimplePushElement::configure(Vector<String> &conf, ErrorHandler *errh) {
 }
 
 void SimplePushElement::push(int, Packet *p){
-  click_chatter("Got a packet of size %d",p->length());
+  click_chatter("Got a packet of size %d", p->length());
   if (p->length() > maxSize)  p->kill();
   else output(0).push(p);
 }
@@ -137,7 +140,7 @@ EXPORT_ELEMENT(SimplePushElement)
 To avoid confusion, we recommend to:
 \begin{itemize}
 	\item Make the ElementName CamelCase
-	\item Use that name in the class\_name macro
+	\item Use that name in the \lstinline!class_name! macro
 	\item Use that name in lowercase for the header (.hh) and source (.cc) files
 	\item Use that name in uppercase, with \lstinline!CLICK_! prepended, for the include guards
 \end{itemize}
@@ -145,15 +148,18 @@ To avoid confusion, we recommend to:
 
 \begin{frame}[fragile]
 \frametitle{simplepullelement}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}[basicstyle=\scriptsize]
 simplepullelement.hh:
+
 class SimplePullElement: public Element { 
   public: ...
-    const char *processing() const {return PULL; }
+    const char *processing() const { return PULL; }
     Packet* pull(int);
 }
+
 simplepullelement.cc:
-Packet* SimplePullElement::pull(int){
+
+Packet* SimplePullElement::pull(int) {
   Packet* p = input(0).pull();
   if(p == 0) return 0;
   click_chatter("Got a packet of size %d",p->length());
@@ -177,10 +183,10 @@ class SimpleAgnosticElement: public Element {
 };
 
 simpleagnosticelement.cc
-void SimpleAgnosticElement::push(int, Packet *p){
+void SimpleAgnosticElement::push(int, Packet *p) {
   // see push element
 }
-Packet* SimpleAgnosticElement::pull(int){
+Packet* SimpleAgnosticElement::pull(int) {
   // see pull element
 }
 \end{lstlisting}
@@ -188,14 +194,16 @@ Packet* SimpleAgnosticElement::pull(int){
 
 \begin{frame}[fragile]
 \frametitle{simpleagnosticelement11}
-\begin{lstlisting}[basicstyle=\footnotesize, emph={AGNOSTIC,simple_action},emphstyle=\underbar]
+\begin{lstlisting}[basicstyle=\scriptsize, emph={AGNOSTIC,simple_action},emphstyle=\underbar]
 simpleagnosticelement11.hh:
+
 class SimpleAgnosticElement11: public Element { 
   public: ...
     const char *processing() const { return AGNOSTIC; }
     const char *port_count() const { return "1/1"; }
     Packet *simple_action(Packet *);
 };
+
 simpleagnosticelement11.cc
 Packet* SimpleAgnosticElement11::simple_action(Packet *p){
   click_chatter("Got a packet of size %d",p->length());
@@ -209,16 +217,16 @@ Packet* SimpleAgnosticElement11::simple_action(Packet *p){
 
 \begin{frame}[fragile]
 \frametitle{Port count}
-Defined by \lstinline!const char *port_count() const! can return:
+Defined by \lstinline!const char *port_count() const!. Can return:
 \begin{itemize}
-	\item \lstinline!"1/1"!: one input port, one output port
-	\item \lstinline!"1/2"!: one input port, two output ports
-	\item \lstinline!"1-2/0"!: one or two input ports and zero output ports. 
-	\item \lstinline!"1/-6"!: One input port and up to six output ports. 
-	\item \lstinline!"2-/-"!: At least two input ports, any number of output ports. 
-	\item \lstinline!"3"!: Exactly three input and output ports. (If no slash appears, the text is used for both input and output ranges.) 
-	\item \lstinline!"1-/="!: At least one input port and the same number of output ports. 
-	\item \lstinline!"1-/=+!": At least one input port and one more output port than there are input ports.
+	\item "1/1": one input port, one output port
+	\item "1/2": one input port, two output ports
+	\item "1-2/0": one or two input ports and zero output ports. 
+	\item "1/-6": One input port and up to six output ports. 
+	\item "2-/-": At least two input ports, any number of output ports. 
+	\item "3"!: Exactly three input and output ports. (If no slash appears, the text is used for both input and output ranges.) 
+	\item "1-/=": At least one input port and the same number of output ports. 
+	\item "1-/=+": At least one input port and one more output port than there are input ports.
 \end{itemize}
 \end{frame}
 % subsection writing_custom_elements (end)
@@ -247,6 +255,7 @@ int MyElement::configure(Vector<String> &conf, ErrorHandler *errh) {
   String data;
   uint32_t limit = 0;
   bool stop = false;
+  
   if (cp_va_kparse(conf, this, errh, 
     "DATA", cpkP+cpkM, cpString, &data, 
     "LIMIT", cpkP, cpUnsigned, &limit, 
@@ -261,18 +270,18 @@ int MyElement::configure(Vector<String> &conf, ErrorHandler *errh) {
 \frametitle{Arguments to cp\_va\_kparse}
 Argument name
 \begin{itemize}
-	\item Type: const char *
+	\item Type: \lstinline!const char *!
 	\item Example: "DATA".
 \end{itemize}
 Parse flags
 \begin{itemize}
-	\item Type: int
+	\item Type: \lstinline!int!
 	\item Zero or sum of cpkP, cpkM, and cpkC.
 \end{itemize}
 If the parse flags contain cpkC, then a confirmation flag comes next:
 \begin{itemize}
-	\item Type: bool *
-	\item This flag is set to true if an argument successfully matched \\the item and false if not.
+	\item Type: \lstinline!bool *!
+	\item This flag is set to \lstinline!true! if an argument successfully matched the item and \lstinline!false! if not.
 \end{itemize}
 Argument type: Defines the type of argument read from the configuration string
 \begin{itemize}
@@ -302,11 +311,12 @@ To combine just sum them, e.g. cpkD+cpkC: deprecated argument that will be confi
 
 \begin{frame}[fragile]
 \frametitle{Cp\_va\_kparse: example}
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\footnotesize]
 int MyElement2::configure(Vector<String> &conf, ErrorHandler *errh) {
   bool p_given;
   uint32_t p = 0x10000;
   IPAddress addr, mask;
+  
   if (cp_va_kparse(conf, this, errh,
     "P", cpkC, &p_given, cpUnsignedReal2, 16, &p,
     "NETWORK", 0, cpIPPrefix, &addr, &mask,
@@ -364,17 +374,17 @@ SimpleElement(myIpRouteTable);
 \end{lstlisting}
 
 Add an element to the header:
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\footnotesize]
 #include "usedelement.hh"
-class ElementUser: public Element{
+class ElementUser: public Element {
  private: 
    UsedElement* used;
 }
 \end{lstlisting}
 
 Use the element in the C++ code
-\begin{lstlisting}
-ElementUser::push(...){
+\begin{lstlisting}[basicstyle=\footnotesize]
+ElementUser::push(...) {
   used->doSomething(...);
 }
 \end{lstlisting}
@@ -382,11 +392,13 @@ ElementUser::push(...){
 \framebreak
 
 Check and configure the element in the configure function:
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\footnotesize]
 int ElementUser::configure(Vector<String> &conf, ErrorHandler *errh){
   UsedElement* tempUsedElement;
   int res = cp_va_kparse(conf, this, errh, "ANELEMENT", 0, cpElementCast, "UsedElement", &tempUsedElement, cpEnd);
+  
   if(res < 0) return res; // parsing failed
+  
   used = tempUsedElement;
   return 0;
 }
@@ -436,7 +448,7 @@ Even better: typedef it for reuse
 Typedef Vector<SomeThing> SomeThingVector; 
 \end{lstlisting}
 Use macro magic for template instantiation
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\footnotesize]
 // generate Vector template instance
 #include <click/vector.cc>
 #if EXPLICIT_TEMPLATE_INSTANCES
@@ -446,7 +458,7 @@ template class Vector<SomeThing>;
 Add things to it: \lstinline!myvector.push_back(some_thing);!
 
 Use iterators to walk over it
-\begin{lstlisting}[basicstyle=\ttfamily]
+\begin{lstlisting}[basicstyle=\footnotesize]
 for (SomeThingVector::const_iterator i = myvector.begin(); i!= myvector.end(); i++){
   doSomeThingWith(*i);  
 }
@@ -467,6 +479,7 @@ myvector.pop_front(); myvector.pop_back();
 #ifndef AODVSETRREPHEADERS_HH
 #define AODVSETRREPHEADERS_HH
 #include <click/element.hh>
+
 CLICK_DECLS
 typedef HashMap<Packet*, IPAddress*> DestinationMap;
 class AODVSetRREPHeaders : public Element { 
@@ -498,6 +511,7 @@ void AODVSetRREPHeaders::push (int port, Packet * p){
 void AODVSetRREPHeaders::addRREP(Packet* rrep, IPAddress * ip){
   destinations.insert(rrep,ip);
 }
+
 // macro magic to use bighashmap
 #include <click/bighashmap.cc>
 #if EXPLICIT_TEMPLATE_INSTANCES
@@ -509,15 +523,15 @@ template class HashMap<Packet*, IPAddress*>;
 \begin{frame}[fragile]
 \frametitle{Click STL: string}
 Use it when manipulating C strings
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 String test = "mytest";
 \end{lstlisting}
 Use standard operators to modify it
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 test += "should say hello";
 \end{lstlisting}
 When used in click\_chatter, convert it
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 click_chatter("my string is %s",test.c_str());
 \end{lstlisting}
 \end{frame}
@@ -632,7 +646,7 @@ packet->set_ip_header(const click_ip* header, unsigned len);
 \end{lstlisting}
 Similar operations exist for TCP and UDP headers
 
-Both operations require header annotations, set by the MarkIPHeader element!
+Both operations require header annotations, set by the \lstinline!MarkIPHeader! element!
 \end{frame}
 
 % subsection packet_manipulation (end)
@@ -649,6 +663,7 @@ class MyElement: public Element {
   private:
     Timer timer;
 }
+
 MyElement::MyElement(): timer(this){}
 int MyElement::configure(Vector<String> &conf, ErrorHandler *errh){
   timer.initialize(this);
@@ -908,6 +923,10 @@ Errors and warnings might come from glibc or Click elements, and might appear in
 \end{frame}
 % subsection valgrind (end)
 
+\section*{Acknowledgements}
+\frame{
+A big thank you to Michael Voorhaen, one of the original authors of these slides.
+}
 \end{document}
 
 
