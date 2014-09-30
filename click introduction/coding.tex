@@ -44,6 +44,22 @@ extendedchars=\true}
 \section{Coding}
 \subsection{Writing custom elements} % (fold)
 \label{sub:writing_custom_elements}
+
+\begin{frame}[fragile]
+	\frametitle{Storing own elements}
+All elements are stored in /elements/ directory
+\begin{itemize}
+	\item Yours should be put in elements/local
+	\item Put the .hh and .cc files there
+\end{itemize}
+To make those elements available:
+\begin{lstlisting}
+make elemlist
+make
+\end{lstlisting}
+Notice new elements being compiled, solve any compilation problems and use your elements
+\end{frame}
+
 \frame{
 \frametitle{Do it yourself}
 Let's make an example element
