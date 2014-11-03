@@ -431,6 +431,30 @@ datatypes, so datatypes consisting of multiple bytes, you must take
 endianness into account. In the end, this is about how data is stored in
 memory, not about how data should be interpreted.
 
+\section{Data structure alignment}
+\subsubsection*{sizeof(struct X) returns the wrong size?}
+Because of the way data is structured within the memory of a computer, the compiler wants to align this data properly. A CPU operates with word sized chunks, which are 4 byte long on a 32 bit processor and 8 byte long on a 64 bit processor. Therefore, when you define a struct, the compiler will add padding bytes to any data structure that does not align properly with these word sized chunks. Take following code for example:
+
+\begin{lstlisting}
+struct X {
+uint8_t a;
+uint8_t b;
+uint16_t c;
+};
+\end{lstlisting}
+
+On a 32 bit system sizeof (struct X) would return 4. However, on a 64 bit system, this would return 8, as 8 bytes is the smallest multiple of the word length (8) that can represents 4 bytes. If you want to be able the actual size of a struct instead of the padded one, the solution is to define your struct as follows:
+
+\begin{lstlisting}
+struct __attribute__((__packed__)) X {
+uint8_t a;
+uint8_t b;
+uint16_t c;
+};
+\end{lstlisting}
+
+This statement will instruct your compiler to only make the struct as large as it needs to be to hold all data (actually, on a per-byte basis), ignoring alignment. Now, sizeof (struct X) will always return 4.
+
 \section{Segfaults and other runtime errors}
 
 \subsubsection*{My code crashes, how do I start debugging?}
