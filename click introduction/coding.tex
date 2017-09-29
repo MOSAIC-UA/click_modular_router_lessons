@@ -7,13 +7,16 @@
 \usepackage{cmap}
 \usepackage{listings}
 \usepackage{hyperref}
+\usepackage{courier}
 \setbeamercovered{transparent}
+
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
 
 \title{Click Coding}
 \subtitle{Coding with Click Modular Router}
 \author{Johan Bergs \and Jeremy Van den Eynde}
-\institute{University of Antwerp\\iMinds - MOSAIC Research Group}
-\date{October 2016}
+\institute{University of Antwerp\\imec - IDLab Research Group}
+\date{October 2017}
 
 \logo{\includegraphics[height=0.75cm]{figures/mosaic_logo.png}}
 
@@ -47,10 +50,10 @@ extendedchars=\true}
 
 \begin{frame}[fragile]
 	\frametitle{Storing own elements}
-All elements are stored in /elements/ directory
+All elements are stored in the \verb!elements/! directory
 \begin{itemize}
-	\item Yours should be put in elements/local
-	\item Put the .hh and .cc files there
+	\item Yours should be put in \verb!elements/local!
+	\item Put the \verb!.hh! and \verb!.cc! files there
 \end{itemize}
 To make those elements available:
 \begin{lstlisting}
@@ -76,7 +79,7 @@ Necessary in the header:
 \begin{itemize}
 	\item Include-guard macros
 	\item Click element macros
-	\item Include click/element.hh
+	\item Include \verb!click/element.hh!
 	\item The class declaration containing 3 special methods:
 \end{itemize}
 \begin{lstlisting}
@@ -90,17 +93,17 @@ const char *processing() const
 \frametitle{Element header}
 Necessary in the source file:
 \begin{itemize}
-	\item Include \!click/config.hh! \textbf{first}!
-	\item \lstinline!CLICK_DECLS! macro
-	\item \lstinline!CLICK_ENDDECLS! macro
-	\item \lstinline!EXPORT_ELEMENT! macro
+	\item Include \verb!click/config.hh! \textbf{first}!
+	\item \verb!CLICK_DECLS! macro
+	\item \verb!CLICK_ENDDECLS! macro
+	\item \verb!EXPORT_ELEMENT! macro
 	\item Implementation of the methods
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{simplepushelement.hh}
-\begin{lstlisting}[basicstyle=\scriptsize]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
 #ifndef CLICK_SIMPLEPUSHELEMENT_HH
 #define CLICK_SIMPLEPUSHELEMENT_HH
 #include <click/element.hh>
@@ -125,9 +128,9 @@ CLICK_ENDDECLS
 
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{simplepushelement.cc}
-\begin{lstlisting}[basicstyle=\scriptsize]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
 #include <click/config.h>
-#include <click/confparse.hh>
+#include <click/args.hh>
 #include <click/error.hh>
 #include "simplepushelement.hh"
 
@@ -136,7 +139,7 @@ SimplePushElement::SimplePushElement() {}
 SimplePushElement::~SimplePushElement() {}
 
 int SimplePushElement::configure(Vector<String> &conf, ErrorHandler *errh) {
-  if (cp_va_kparse(conf, this, errh, "MAXPACKETSIZE", cpkM, cpInteger, &maxSize, cpEnd) < 0) return -1;
+  if (Args(conf, this, errh).read_m("MAXPACKETSIZE", maxSize).complete() < 0) return -1;
   if (maxSize <= 0) return errh->error("maxsize should be larger than 0");
   return 0;
 }
@@ -164,7 +167,7 @@ To avoid confusion, we recommend to:
 
 \begin{frame}[fragile]
 \frametitle{simplepullelement}
-\begin{lstlisting}[basicstyle=\scriptsize]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily,emph={PULL},emphstyle=\underbar]
 simplepullelement.hh:
 
 class SimplePullElement: public Element { 
@@ -189,7 +192,7 @@ Packet* SimplePullElement::pull(int) {
 
 \begin{frame}[fragile]
 \frametitle{simpleagnosticelement}
-\begin{lstlisting}[basicstyle=\footnotesize,emph={AGNOSTIC},emphstyle=\underbar]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily,emph={AGNOSTIC},emphstyle=\underbar]
 simpleagnosticelement.hh:
 class SimpleAgnosticElement: public Element { 
   public: ...
@@ -210,7 +213,7 @@ Packet* SimpleAgnosticElement::pull(int) {
 
 \begin{frame}[fragile]
 \frametitle{simpleagnosticelement11}
-\begin{lstlisting}[basicstyle=\scriptsize, emph={AGNOSTIC,simple_action},emphstyle=\underbar]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily, emph={AGNOSTIC,simple_action},emphstyle=\underbar]
 simpleagnosticelement11.hh:
 
 class SimpleAgnosticElement11: public Element { 
@@ -235,14 +238,14 @@ Packet* SimpleAgnosticElement11::simple_action(Packet *p){
 \frametitle{Port count}
 Defined by \lstinline!const char *port_count() const!. Can return:
 \begin{itemize}
-	\item "1/1": one input port, one output port
-	\item "1/2": one input port, two output ports
-	\item "1-2/0": one or two input ports and zero output ports. 
-	\item "1/-6": One input port and up to six output ports. 
-	\item "2-/-": At least two input ports, any number of output ports. 
-	\item "3"!: Exactly three input and output ports. (If no slash appears, the text is used for both input and output ranges.) 
-	\item "1-/=": At least one input port and the same number of output ports. 
-	\item "1-/=+": At least one input port and one more output port than there are input ports.
+	\item \verb!"1/1"!: one input port, one output port
+	\item \verb!"1/2"!: one input port, two output ports
+	\item \verb!"1-2/0"!: one or two input ports and zero output ports. 
+	\item \verb!"1/-6"!: One input port and up to six output ports. 
+	\item \verb!"2-/-"!: At least two input ports, any number of output ports. 
+	\item \verb!"3"!: Exactly three input and output ports. (If no slash appears, the text is used for both input and output ranges.) 
+	\item \verb!"1-/="!: At least one input port and the same number of output ports. 
+	\item \verb!"1-/=+"!: At least one input port and one more output port than there are input ports.
 \end{itemize}
 \end{frame}
 % subsection writing_custom_elements (end)
@@ -250,15 +253,47 @@ Defined by \lstinline!const char *port_count() const!. Can return:
 % \subsection{Configuration Parsing} % (fold)
 % \label{sub:configuration_parsing}
 
+%\begin{frame}[fragile,allowframebreaks]
+%\frametitle{Parsing configurations with cp\_va\_kparse}
+%Call this function on
+%\begin{itemize}
+%	\item the configuration (conf)
+%	\item the element (this) 
+%	\item the errorhandler (errh)
+%	\item an argument list
+%	\item a closing mark (cpEnd)
+%\end{itemize}
+%Check the return value (C-style):
+%\begin{itemize}
+%	\item 0: all parsing went fine
+%	\item Negative: problems detected, configure should return -1
+%\end{itemize}
+%
+%\begin{lstlisting}[basicstyle=\footnotesize]
+%int MyElement::configure(Vector<String> &conf, ErrorHandler *errh) {
+%  String data;
+%  uint32_t limit = 0;
+%  bool stop = false;
+%  
+%  if (cp_va_kparse(conf, this, errh, 
+%    "DATA", cpkP+cpkM, cpString, &data, 
+%    "LIMIT", cpkP, cpUnsigned, &limit, 
+%    "STOP", 0, cpBool, &stop, 
+%    cpEnd) < 0) return -1;
+%  ...
+%}
+%\end{lstlisting}
+%\end{frame}
+
 \begin{frame}[fragile,allowframebreaks]
-\frametitle{Parsing configurations with cp\_va\_kparse}
-Call this function on
+\frametitle{Parsing configurations with Args}
+Call this on
 \begin{itemize}
-	\item the configuration (conf)
-	\item the element (this) 
-	\item the errorhandler (errh)
-	\item an argument list
-	\item a closing mark (cpEnd)
+	\item the configuration (\verb!conf!)
+	\item the element (\verb!this!) 
+	\item the errorhandler (\verb!errh!)
+	\item concatenate with variants of \verb!read()!
+	\item end with \verb!complete()!
 \end{itemize}
 Check the return value (C-style):
 \begin{itemize}
@@ -266,107 +301,155 @@ Check the return value (C-style):
 	\item Negative: problems detected, configure should return -1
 \end{itemize}
 
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 int MyElement::configure(Vector<String> &conf, ErrorHandler *errh) {
   String data;
   uint32_t limit = 0;
   bool stop = false;
   
-  if (cp_va_kparse(conf, this, errh, 
-    "DATA", cpkP+cpkM, cpString, &data, 
-    "LIMIT", cpkP, cpUnsigned, &limit, 
-    "STOP", 0, cpBool, &stop, 
-    cpEnd) < 0) return -1;
+  if (Args(conf, this, errh) 
+    .read_mp("DATA", data) 
+    .read_p("LIMIT",limit) 
+    .read("STOP", stop)
+    .complete() < 0) return -1;
   ...
 }
 \end{lstlisting}
 \end{frame}
 
+%\begin{frame}[fragile,allowframebreaks]
+%\frametitle{Arguments to cp\_va\_kparse}
+%Argument name
+%\begin{itemize}
+%	\item Type: \lstinline!const char *!
+%	\item Example: "DATA".
+%\end{itemize}
+%Parse flags
+%\begin{itemize}
+%	\item Type: \lstinline!int!
+%	\item Zero or sum of cpkP, cpkM, and cpkC.
+%\end{itemize}
+%If the parse flags contain cpkC, then a confirmation flag comes next:
+%\begin{itemize}
+%	\item Type: \lstinline!bool *!
+%	\item This flag is set to \lstinline!true! if an argument successfully matched the item and \lstinline!false! if not.
+%\end{itemize}
+%Argument type: Defines the type of argument read from the configuration string
+%\begin{itemize}
+%	\item Type: CpVaParseCmd
+%	\item Example: cpString, cpIPAddress, cpInteger
+%\end{itemize}
+%Optional parse parameters
+%\begin{itemize}
+%	\item Determined by the argument type
+%	\item For example, cpUnsignedReal2 takes a parse parameter that defines how many bits of fraction are needed.
+%\end{itemize}
+%Result storage: Determined by the argument type
+%\end{frame}
+
 \begin{frame}[fragile,allowframebreaks]
-\frametitle{Arguments to cp\_va\_kparse}
+\frametitle{Arguments to read}
 Argument name
 \begin{itemize}
 	\item Type: \lstinline!const char *!
 	\item Example: "DATA".
 \end{itemize}
-Parse flags
-\begin{itemize}
-	\item Type: \lstinline!int!
-	\item Zero or sum of cpkP, cpkM, and cpkC.
-\end{itemize}
-If the parse flags contain cpkC, then a confirmation flag comes next:
-\begin{itemize}
-	\item Type: \lstinline!bool *!
-	\item This flag is set to \lstinline!true! if an argument successfully matched the item and \lstinline!false! if not.
-\end{itemize}
-Argument type: Defines the type of argument read from the configuration string
-\begin{itemize}
-	\item Type: CpVaParseCmd
-	\item Example: cpString, cpIPAddress, cpInteger
-\end{itemize}
-Optional parse parameters
-\begin{itemize}
-	\item Determined by the argument type
-	\item For example, cpUnsignedReal2 takes a parse parameter that defines how many bits of fraction are needed.
-\end{itemize}
-Result storage: Determined by the argument type
+Result storage: variable name of the variable that will hold the passed value
 \end{frame}
 
+%\begin{frame}[fragile]
+%\frametitle{Parse flags}
+%\begin{itemize}
+%	\item cpkN (=0): default, no special requirements
+%	\item cpkM: Mandatory argument
+%	\item cpkP: Positionally specified argument
+%	\item cpkC: Confirmation of presence needed
+%	\item cpkD: Deprecated argument
+%\end{itemize}
+%To combine just sum them, e.g. cpkD+cpkC: deprecated argument that will be confirmed
+%\end{frame}
+
 \begin{frame}[fragile]
-\frametitle{Parse flags}
+\frametitle{Variants of read}
 \begin{itemize}
-	\item cpkN (=0): default, no special requirements
-	\item cpkM: Mandatory argument
-	\item cpkP: Positionally specified argument
-	\item cpkC: Confirmation of presence needed
-	\item cpkD: Deprecated argument
+	\item \verb!read!: default, no special requirements
+	\item \verb!read_m!: Mandatory argument
+	\item \verb!read_p!: Positionally specified argument
+	\item \verb!read_mp!: Mandatory, positionally specified argument
 \end{itemize}
-To combine just sum them, e.g. cpkD+cpkC: deprecated argument that will be confirmed
 \end{frame}
 % subsection configuration_parsing (end)
 
-\begin{frame}[fragile]
-\frametitle{Cp\_va\_kparse: example}
-\begin{lstlisting}[basicstyle=\footnotesize]
-int MyElement2::configure(Vector<String> &conf, ErrorHandler *errh) {
-  bool p_given;
-  uint32_t p = 0x10000;
-  IPAddress addr, mask;
-  
-  if (cp_va_kparse(conf, this, errh,
-    "P", cpkC, &p_given, cpUnsignedReal2, 16, &p,
-    "NETWORK", 0, cpIPPrefix, &addr, &mask,
-    cpEnd) < 0)
-  return -1;
-  ...
-}
-\end{lstlisting}
-\end{frame}
+%\begin{frame}[fragile]
+%\frametitle{Cp\_va\_kparse: example}
+%\begin{lstlisting}[basicstyle=\footnotesize]
+%int MyElement2::configure(Vector<String> &conf, ErrorHandler *errh) {
+%  bool p_given;
+%  uint32_t p = 0x10000;
+%  IPAddress addr, mask;
+%  
+%  if (cp_va_kparse(conf, this, errh,
+%    "P", cpkC, &p_given, cpUnsignedReal2, 16, &p,
+%    "NETWORK", 0, cpIPPrefix, &addr, &mask,
+%    cpEnd) < 0)
+%  return -1;
+%  ...
+%}
+%\end{lstlisting}
+%\end{frame}
+
+%\begin{frame}[fragile,allowframebreaks]
+%\frametitle{Cp\_va\_kparse: example 2}
+%\begin{lstlisting}
+%cp_va_kparse(conf, this, errh, "P", cpkC, &p_given, cpUnsigned, &p, "NETWORK", 0, cpIPAddress, &addr, &mask, cpEnd)
+%\end{lstlisting}
+%Will this match:
+%\begin{itemize}
+%	\item \lstinline!P 5, NETWORK 192.168.0.3!
+%	\item \lstinline!NETWORK 1.2.3.4, P5     !
+%	\item \lstinline!P 5                     !
+%	\item \lstinline!NETWORK 192.168.0.3     !
+%	\item \lstinline!(nothing)               !
+%\end{itemize}
+%\framebreak
+%How about
+%\begin{lstlisting}
+%cp_va_kparse(conf, this, errh, "P", cpkC, &p_given, cpUnsigned, &p, "NETWORK", cpkM, cpIPAddress, &addr, &mask, cpEnd)
+%\end{lstlisting}
+%Will this match:
+%\begin{itemize}
+%	\item \lstinline!P 5, NETWORK 192.168.0.3!
+%	\item \lstinline!NETWORK 1.2.3.4, P5     !
+%	\item \lstinline!P 5                     !
+%	\item \lstinline!NETWORK 192.168.0.3     !
+%	\item \lstinline!(nothing)               !
+%\end{itemize}
+%\end{frame}
 
 \begin{frame}[fragile,allowframebreaks]
-\frametitle{Cp\_va\_kparse: example 2}
+\frametitle{Args: example}
 \begin{lstlisting}
-cp_va_kparse(conf, this, errh, "P", cpkC, &p_given, cpUnsigned, &p, "NETWORK", 0, cpIPAddress, &addr, &mask, cpEnd)
+Args(conf, this, errh).read("P", p).read("ADDRESS", addr).complete()
 \end{lstlisting}
 Will this match:
 \begin{itemize}
-	\item \lstinline!P 5, NETWORK 192.168.0.3!
-	\item \lstinline!NETWORK 1.2.3.4, P5     !
+	\item \lstinline!P 5, ADDRESS 192.168.0.3!
+	\item \lstinline!ADDRESS 1.2.3.4, P 5     !
 	\item \lstinline!P 5                     !
-	\item \lstinline!NETWORK 192.168.0.3     !
+	\item \lstinline!ADDRESS 192.168.0.3     !
 	\item \lstinline!(nothing)               !
 \end{itemize}
 \framebreak
 How about
 \begin{lstlisting}
-cp_va_kparse(conf, this, errh, "P", cpkC, &p_given, cpUnsigned, &p, "NETWORK", cpkM, cpIPAddress, &addr, &mask, cpEnd)
+Args(conf, this, errh).read("P", p).read_m("ADDRESS", addr).complete()
 \end{lstlisting}
 Will this match:
 \begin{itemize}
-	\item \lstinline!P 5, NETWORK 192.168.0.3!
-	\item \lstinline!NETWORK 1.2.3.4, P5     !
+	\item \lstinline!P 5, ADDRESS 192.168.0.3!
+	\item \lstinline!ADDRESS 1.2.3.4, P 5     !
 	\item \lstinline!P 5                     !
-	\item \lstinline!NETWORK 192.168.0.3     !
+	\item \lstinline!ADDRESS 192.168.0.3     !
 	\item \lstinline!(nothing)               !
 \end{itemize}
 \end{frame}
@@ -381,16 +464,16 @@ Elements might need other elements
 \end{itemize}
 In Click script: 
 \begin{lstlisting}
-SimpleElement(IPRouteTable);
+SimpleElement(UsedElement);
 \end{lstlisting}
 or
 \begin{lstlisting}
-myIpRouteTable::IPRouteTable;
-SimpleElement(myIpRouteTable);
+myElement:: UsedElement;
+SimpleElement(myElement);
 \end{lstlisting}
 
 Add an element to the header:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 #include "usedelement.hh"
 class ElementUser: public Element {
  private: 
@@ -399,7 +482,7 @@ class ElementUser: public Element {
 \end{lstlisting}
 
 Use the element in the C++ code
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 ElementUser::push(...) {
   used->doSomething(...);
 }
@@ -408,16 +491,29 @@ ElementUser::push(...) {
 \framebreak
 
 Check and configure the element in the configure function:
-\begin{lstlisting}[basicstyle=\footnotesize]
-int ElementUser::configure(Vector<String> &conf, ErrorHandler *errh){
+%\begin{lstlisting}
+%int ElementUser::configure(Vector<String> &conf, ErrorHandler *errh){
+%  UsedElement* tempUsedElement;
+%  int res = cp_va_kparse(conf, this, errh, "ANELEMENT", 0, cpElementCast, "UsedElement", &tempUsedElement, cpEnd);
+%  
+%  if(res < 0) return res; // parsing failed
+%  
+%  used = tempUsedElement;
+%  return 0;
+%}
+%\end{lstlisting}
+
+\begin{lstlisting}
+int ElementUser::configure(Vector<String> &conf, ErrorHandler *errh) {
   UsedElement* tempUsedElement;
-  int res = cp_va_kparse(conf, this, errh, "ANELEMENT", 0, cpElementCast, "UsedElement", &tempUsedElement, cpEnd);
+  int result = Args(conf, this, errh).read("ANELEMENT", ElementCastArg("UsedElement"), tempUsedElement).complete();
   
-  if(res < 0) return res; // parsing failed
+  if(result < 0) return result; // parsing failed
   
   used = tempUsedElement;
   return 0;
 }
+
 \end{lstlisting}
 \end{frame}
 
@@ -448,7 +544,7 @@ Additional functions:
 Overview of the most important types
 \begin{itemize}
 	\item Vector
-	\item HashMap (will become HashContainer)
+	\item HashMap
 	\item String
 \end{itemize}
 \end{frame}
@@ -464,7 +560,7 @@ Even better: typedef it for reuse
 Typedef Vector<SomeThing> SomeThingVector; 
 \end{lstlisting}
 Use macro magic for template instantiation
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 // generate Vector template instance
 #include <click/vector.cc>
 #if EXPLICIT_TEMPLATE_INSTANCES
@@ -474,7 +570,7 @@ template class Vector<SomeThing>;
 Add things to it: \lstinline!myvector.push_back(some_thing);!
 
 Use iterators to walk over it
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 for (SomeThingVector::const_iterator i = myvector.begin(); i!= myvector.end(); i++){
   doSomeThingWith(*i);  
 }
@@ -491,7 +587,7 @@ myvector.pop_front(); myvector.pop_back();
 
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{Click STL: hashmap example}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 #ifndef AODVSETRREPHEADERS_HH
 #define AODVSETRREPHEADERS_HH
 #include <click/element.hh>
@@ -508,7 +604,7 @@ class AODVSetRREPHeaders : public Element {
 CLICK_ENDDECLS
 #endif
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 AODVSetRREPHeaders::AODVSetRREPHeaders(): 
   destinations(){}
 void AODVSetRREPHeaders::push (int port, Packet * p){
@@ -523,7 +619,7 @@ void AODVSetRREPHeaders::push (int port, Packet * p){
   ...
 }
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 void AODVSetRREPHeaders::addRREP(Packet* rrep, IPAddress * ip){
   destinations.insert(rrep,ip);
 }
@@ -570,8 +666,8 @@ Use structs
 	\item Define those in shared headers for reuse
 \end{itemize}
 Create your packet format
-\begin{lstlisting}[basicstyle=\footnotesize]
-struct MyPacketFormat{
+\begin{lstlisting}
+struct MyPacketFormat {
   uint8_t type; // 8 bit = 1 byte
   uint32_t lifetime; // 32 bit = 4 bytes
   in_addr destination; // IP address
@@ -594,14 +690,14 @@ Click already defines lots of data types for you, see \lstinline!include/clickne
 \begin{frame}[fragile]
 \frametitle{Creating a packet}
 Provide headroom and tailroom:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
   int tailroom = 0;
   int packetsize = sizeof(MyPacketFormat);
-  int headroom = sizeof(click_ip)+sizeof(click_udp)+sizeof(click_ether);
-  WritablePacket *packet = Packet::make(headroom,0,packetsize, tailroom);
-  if (packet == 0 )return click_chatter( "cannot make packet!");
+  int headroom = sizeof(click_ip) + sizeof(click_udp) + sizeof(click_ether);
+  WritablePacket *packet = Packet::make(headroom, 0, packetsize, tailroom);
+  if (packet == 0) return click_chatter("cannot make packet!");
   memset(packet->data(), 0, packet->length());
-  MyPacketFormat* format=(MyPacketFormat*)packet->data();
+  MyPacketFormat* format = (MyPacketFormat*) packet->data();
   format->type = 0;
   format->lifetime = htonl(counter);
   format->destination = ip.in_addr();
@@ -612,15 +708,15 @@ Destroy with \lstinline!packet->kill()!, only way to free your memory correctly!
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{Processing a packet}
 Cast the packet data to the right format
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 // start with the first part
-my_header * head = (my_header *) (packet->data());
+my_header* head = (my_header*)(packet->data());
 // continue with later bytes
 int offset = sizeof(my_header)
-second_header * h2 = (my_second_header *)(my_header+1);
+second_header* h2 = (my_second_header*)(my_header + 1);
 \end{lstlisting}
 Use the format to read from and write to
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 if (head->somefield == 2){
   head->otherfield = htons(38);
   ...
@@ -628,7 +724,7 @@ if (head->somefield == 2){
 \end{lstlisting}
 \framebreak
 Only write to writable packets
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 WritablePacket *q = p->uniqueify();
 // only use q now!
 q->somefield = newvalue
@@ -653,11 +749,11 @@ Equivalents at tail of packet: \lstinline!put! and \lstinline!take!
 \begin{frame}[fragile]
 \frametitle{Manipulating packet annotations}
 Get IP header:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 packet->ip_header();
 \end{lstlisting}
 Set IP header of length len:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 packet->set_ip_header(const click_ip* header, unsigned len);
 \end{lstlisting}
 Similar operations exist for TCP and UDP headers
@@ -672,7 +768,7 @@ Both operations require header annotations, set by the \lstinline!MarkIPHeader! 
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{Simple timer}
 Runs the run\_timer function upon expiry
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 class MyElement: public Element {
   public:
     void run_timer(Timer*);
@@ -687,7 +783,7 @@ int MyElement::configure(Vector<String> &conf, ErrorHandler *errh){
   return 0;
 }
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 void MyElement::run_timer(Timer* t){
   click_chatter("we are now 1 second later");
   timer.schedule_after_msec(1000);
@@ -700,7 +796,7 @@ void MyElement::run_timer(Timer* t){
 Run your callback function upon expiry with data, because you want to know some context information.
 
 Code is a little bit harder:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 class MyElement: public Element{
   private:
     struct TimerData{ // callback data
@@ -711,7 +807,7 @@ class MyElement: public Element{
   void expire(const MyElement &, TimerData *);
 }
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 void MyElement::someFunction(){
   TimerData* timerdata = new TimerData();
   timerdata->s = new Something();
@@ -726,8 +822,8 @@ void MyElement::handleExpiry(Timer*, void * data){
   timerdata->me->expire(*timerdata->s,timerdata);
 }
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
-void MyElement::expire(const Something & s, TimerData * timerdata){
+\begin{lstlisting}
+void MyElement::expire(const Something& s, TimerData* timerdata){
   // do things with Something
   // timerdata passed to free memory after timer expiry
 }
@@ -751,7 +847,7 @@ Use \lstinline!add_read_handler! and \lstinline!add_write_handler!
 
 \begin{frame}[fragile,allowframebreaks]
 \frametitle{Adding a write handler}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 class WriteElement: public Element{
   public:
     static int handle(const String &conf, Element *e, void * thunk, ErrorHandler * errh);
@@ -765,7 +861,7 @@ int WriteElement::handle(const String &conf, Element *e, void * thunk, ErrorHand
   return 0;
 }
 \end{lstlisting}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 void WriteElement::add_handlers(){
   add_write_handler("a_handle", &handle, (void *)0);
 }
@@ -774,7 +870,7 @@ void WriteElement::add_handlers(){
 
 \begin{frame}[fragile]
 \frametitle{Adding a read handler}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 class ReadElement: public Element{
   public:
     static String handle(Element *e, void * thunk);
@@ -802,7 +898,7 @@ Click website: \url{http://www.read.cs.ucla.edu/click/}
 	\item Programming Concepts
 	\item Doxygen documentation
 \end{itemize}
-Click thesis (online: publications, Ph.D. thesis)
+Click thesis (online: publications, PhD thesis)
 \begin{itemize}
 	\item Comprehensive documentation of every concept
 	\item Interesting chapters for development:
@@ -850,7 +946,7 @@ Located in tools/click-flatten
 
 \begin{frame}[fragile]
 \frametitle{click-flatten (continued)}
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
   tools/click-flatten/click-flatten ping-3.click
   # 33 "ping-3.click"
   AddressInfo@1 :: AddressInfo(senderaddr 10.0.0.1 1A:7C:3E:90:78:41);
@@ -893,7 +989,7 @@ sender/filter [1] -> sender/IPPrint@8
 Basic visualization of Click scripts, renders dotty output (Graphviz software)
 
 Usage:
-\begin{lstlisting}[basicstyle=\footnotesize]
+\begin{lstlisting}
 tools/click-flatten/click-flatten ping-1.click | tools/click-viz/click-viz | dot -Tpng > ping-1.png
 \end{lstlisting}
 

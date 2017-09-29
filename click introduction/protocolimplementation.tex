@@ -14,9 +14,9 @@
 \author{Johan Bergs \and Jeremy Van den Eynde}
 \institute{
 		University of Antwerp\\
-		iMinds - MOSAIC Research Group
+		imec - IDLab Research Group
 }
-\date{October 2016}
+\date{October 2017}
 
 \logo{\includegraphics[height=0.75cm]{figures/mosaic_logo.png}}
 
@@ -80,7 +80,7 @@ Do not do this, very large overhead:
 Use the plain structs
 \begin{itemize}
 	\item Requires getting used to
-	\item Straightforward: most packet manipulation is low-level anyway 
+	\item Straightforward: packet manipulation is low-level 
 \end{itemize}
 }
 
@@ -118,14 +118,13 @@ Infobase:
 \frametitle{The source-responder pattern}
 Generating packets can be hard, especially when packet formats must adhere to a standard. Difficult to debug, as packets can get lost in routing complexity.
 
-Solution:
 \begin{itemize}
 	\item Debug bit-by-bit, manually
-	\item Introduce a source element, only responsible for packet generation
+	\item Create a source element, only responsible for packet generation
 	\item MySource -> ToDump(my.dump) -> Discard
 \end{itemize}
 
-Packet generation logic is now in one place, and can easily be tested. Next create a packet responder that parses the packet and responds. When tested plug the elements into a larger Click script.
+Packet generation logic is now in one place, and can easily be tested. Next create a packet responder that parses the packet and responds. When tested, plug the elements into a larger Click script.
 
 \emph{Other names: generator-receiver, sender-processor}
 }
@@ -162,8 +161,6 @@ Not a good idea:
 \end{itemize}
 Conclusion: remain low level!
 }
-
-% section example_ntp_echo_daytime (end)
 \end{document}
 
 

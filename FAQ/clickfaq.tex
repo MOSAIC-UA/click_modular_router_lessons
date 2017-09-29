@@ -8,7 +8,7 @@
 \usepackage{listings}
 \lstset{language=C++,linewidth=\columnwidth,breaklines=true,basicstyle=\footnotesize,tabsize=2,frame=l,framesep=15pt,xleftmargin=20pt}
 
-\author{Johan Bergs --- Jeremy Van den Eynde}
+\author{Johan Bergs -- Jeremy Van den Eynde}
 \title{Click Frequently Asked Questions}
 \date{}
 
@@ -20,24 +20,25 @@
 \label{sec:general}
 
 \subsubsection*{Which sources apart from this FAQ and the Click tutorial are good to learn more about Click?} % (fold)
-The Click Modular Router homepage \url{http://www.read.cs.ucla.edu/click/}.
+The Click Modular Router homepage \url{http://www.read.cs.ucla.edu/click/}. You can  also search the mailinglist with Google: \texttt{site:pdos.csail.mit.edu whatyousearch}.
+
 
 \subsubsection*{I have asked everyone and no one can help me with my Click problems. Can
 I now ask for help on the Click malinglist?}
 
-NO. Mail to johan.bergs@uantwerpen.be and jeremy.vandeneynde@uantwerpen.be, they will
+NO. Mail to Johan Bergs and Jeremy Van den Eynde, they'll
 help you. (If everyone mails simple questions to the mailinglist then
 the high quality of it will drop, with less and worse Click releases as
 a consequence.)
 
-\subsubsection*{I run Click on my 64bit CPU and configure fails saying that it
+\subsubsection*{I run Click on my 64bit AMD Opteron and configure fails saying that it
 does not know the machine `x86\_64-unknown'?}
 
-Replace `config.sub' by /usr/share/automake/config.sub and rerun
+Replace `config.sub' by /usr/share/automake/config.sub and rerurn
 configure. This version is probably more up to date and will support
 your architecture.
 
-\subsubsection*{On my 64bit CPU I get a compilation error in aqm/red.cc about a cast
+\subsubsection*{On my AMD Athlon64 I get a compilation error in aqm/red.cc about a cast
 from void* to int.}
 
 You are running Click-1.4.3! It was not yet ready for 64 bit systems,
@@ -390,8 +391,8 @@ More information on this subject is available at \url{http://en.wikipedia.org/wi
 
 \subsubsection*{What about uint\_64?}
 
-Try to avoid using that, if you need to then you should contact Bart and
-Johan.
+Try to avoid using that, if you need to then you should contact Johan and
+Jeremy.
 
 \subsubsection*{There is no such thing as an uint4\_t, and I need this for two adjacent
 fields?}
@@ -440,7 +441,7 @@ uint16_t c;
 };
 \end{lstlisting}
 
-On a 32 bit system sizeof (struct X) would return 4. However, on a 64 bit system, this would return 8, as 8 bytes is the smallest multiple of the word length (8) that can represents 4 bytes. If you want to be able the actual size of a struct instead of the padded one, the solution is to define your struct as follows:
+On a 32 bit system sizeof (struct X) would return 4. However, on a 64 bit system, this would return 8, as 8 bytes is the smallest multiple of the word length (8) that can represents 4 bytes. If you want to be able to work with the actual size of a struct instead of the padded one, the solution is to define your struct as follows:
 
 \begin{lstlisting}
 struct __attribute__((__packed__)) X {
@@ -457,7 +458,7 @@ This statement will instruct your compiler to only make the struct as large as i
 \subsubsection*{My code crashes, how do I start debugging?}
 
 Take a look at valgrind, ddd and gdb. If you need more information about
-these tools just post a question or ask Bart and Johan.
+these tools just post a question or ask Joha and jeremyn.
 
 \subsubsection*{My elements configures without errors and still I get an unspecified
 error?}
@@ -498,9 +499,9 @@ have to be initialized. This means things can and will crash.
 online. Can I use it? Or base my code on it?}
 
 You searched very well, but that's not the purpose of the project. By
-the way, that implementation is complete, it can do more than the
+the way, that implemenation is complete, it can do more than the
 assignments requires. Making everything compatible with the scripts is a
-lot of work\ldots{} We know a lot of implementations and we are actively
+lot of work\ldots{} We know a lot of implemenations and we are actively
 looking for new ones, as with every project copying equals fraud and as
 a consequence reduces your points to 0.
 
@@ -579,6 +580,6 @@ checksum to 0 to calculate it. So use existing code to:
   modify special headers, then use Click's structs instead of yours
 \end{itemize}
 
-Hint: tunnelling is possible without almost any new code.
+Hint: tunneling is possible without almost any new code.
 
 \end{document}

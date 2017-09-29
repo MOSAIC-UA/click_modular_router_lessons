@@ -8,16 +8,16 @@
 \usepackage{listings}
 \setbeamercovered{transparent}
 
-\newcommand{\clickversion}{2.0.1}
+\newcommand{\clickversion}{}
 
 \title{Click Installation}
 \subtitle{Installation of Click Modular Router}
-\author{Johan Bergs \and Jeremy Van den Eynde}
+\author{Johan Bergs\ and Jeremy Van den Eynde}
 \institute{
 		University of Antwerp\\
-		iMinds - MOSAIC Research Group
+		imec - IDLab Research Group
 }
-\date{October 2016 - Click \clickversion}
+\date{October 2017}
 
 \logo{\includegraphics[height=0.75cm]{figures/mosaic_logo.png}}
 
@@ -60,12 +60,12 @@ basicstyle=\ttfamily}
 \begin{frame}[fragile]
 \frametitle{Download and configure}
 \begin{itemize}
-	\item Version \clickversion~ is used: \url{http://www.read.cs.ucla.edu/click/click-\clickversion.tar.gz }
-	\item For bleeding-edge development: git
-	\item Untar Click in some directory: \lstinline!tar xzf click-\clickversion.tar.gz!
+	\item A github clone version is used: \url{https://github.com/johanbergs/click}
+	\item For bleeding-edge development: \url{https://github.com/kohler/click}
+	\item Download and unzip Click in some directory
 	\item Configure it, disabling the kernel module and enable your own local elements:
 	\begin{lstlisting}
-cd click-\clickversion
+cd click-master
 ./configure --disable-linuxmodule --enable-local --enable-etherswitch
 \end{lstlisting}
 \end{itemize}
@@ -74,7 +74,7 @@ cd click-\clickversion
 \begin{frame}[fragile]
 	\frametitle{Make and install}
 \begin{itemize}
-	\item Make Click (fast), inside the click-\clickversion~ directory: \lstinline!make -j2!
+	\item Make Click (fast), inside the click-master directory: \lstinline!make -j2!
 	\item Click will now run: \lstinline!userlevel/click conf/test.click!
 	\item Output should be five times \\ \lstinline!ok:   40 | 45000028 00000000 401177c3 01000001 02000002 13691369!
 	\item Do not run make install, every time you change elements you must do a make install, as root!
@@ -102,7 +102,6 @@ write <elementname>.<handlername> <values>
 write arptable.insert 00:50:BA:85:84:B1 10.0.1.2
 \end{verbatim}
 \end{frame}
-
 \end{document}
 
 

@@ -11,14 +11,16 @@
 \usepackage{listings}
 \usepackage{hyperref}
 
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+
 \title{Click Concepts}
 \subtitle{Click Modular Router Concepts and Philosophy}
 \author{Johan Bergs \and Jeremy Van den Eynde}
 \institute{
 		University of Antwerp\\
-		iMinds - MOSAIC Research Group
+		imec - IDLab Research Group
 }
-\date{October 2016}
+\date{October 2017}
 
 \logo{\includegraphics[height=0.75cm]{figures/mosaic_logo.png}}
 
@@ -144,7 +146,7 @@ Pull port:
 Agnostic port:
 \begin{itemize}
 	\item Square-in-square or triangle-in-triangle
-	\item Becomes push or pull (inner square/triangle filled or empty)
+	\item Becomes push or pull
 \end{itemize}
 \begin{figure}[t]
 	\centering
@@ -209,13 +211,13 @@ Text files describing the Click graph:
 	\item Connections between elements
 \end{itemize}
 \begin{lstlisting}
-	src :: FromDevice(eth0); ctr :: Counter; 
-	sink :: Discard; 
-	src -> ctr; ctr -> sink;
+    src :: FromDevice(eth0); ctr :: Counter; 
+    sink :: Discard; 
+    src -> ctr; ctr -> sink;
 \end{lstlisting}
 or
 \begin{lstlisting}
-FromDevice(eth0) -> Counter -> Discard;
+    FromDevice(eth0) -> Counter -> Discard;
 \end{lstlisting}
 \end{frame}
 % 
@@ -225,9 +227,9 @@ FromDevice(eth0) -> Counter -> Discard;
 \frametitle{Input and output ports}
 Identified by number (0,1,..)
 \begin{itemize}
-	\item Input port:	\lstinline!-> [nr1]Element ->!
-	\item Output port: \lstinline!-> Element[nr2] ->!
-	\item  Both: \lstinline!-> [nr1]Element[nr2] ->!
+	\item Input port: \verb!-> [nr1]Element ->!
+	\item Output port: \verb!-> Element[nr2] ->!
+	\item  Both: \verb!-> [nr1]Element[nr2] ->!
 	\item  Only one port: number can be omitted
 \end{itemize}
 Motivates instance naming
@@ -243,9 +245,9 @@ mypackets[1]-> Print("the others") -> Discard;
 \frametitle{Compound elements in Click scripts}
 \begin{lstlisting}
 elementclass DumbRouter { $myaddr |
-	mypackets :: IPClassifier(dst host $myaddr,-);
-	input[0]-> mypackets;mypackets[0]-> [1]output;
-	mypackets[1]-> [0]output;
+    mypackets :: IPClassifier(dst host $myaddr,-);
+    input[0]-> mypackets; mypackets[0]-> [1]output;
+    smypackets[1]-> [0]output;
 }
 u :: DumbRouter(1.2.3.4);
 FromDevice(eth0)-> u;
@@ -274,9 +276,9 @@ Lots of data types supported
 \frametitle{Element Configuration Examples}
 \begin{itemize}
 	\item SimpleElement("data")
-	\item SimpleElement("data",ACTIVE false)
-	\item SimpleElement("moredata",800)
-    \item SimpleElement("data",800,DATASIZE 67, SOURCE 1.2.3.4)
+	\item SimpleElement("data", ACTIVE false)
+	\item SimpleElement("moredata", 800)
+    \item SimpleElement("data", 800, DATASIZE 67, SOURCE 1.2.3.4)
 \end{itemize}
 }
 \frame{
