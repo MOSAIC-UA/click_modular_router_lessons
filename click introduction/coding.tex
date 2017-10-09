@@ -856,7 +856,7 @@ class WriteElement: public Element{
 
 int WriteElement::handle(const String &conf, Element *e, void * thunk, ErrorHandler * errh){
   WriteElement * me = (WriteElement *) e;
-  if(cp_va_kparse(conf, me, errh, ..., cpEnd) < 0) return -1;
+  if(Args(conf, this, errh).read(...).complete()  < 0) return -1;
   me->doSomethingWithParsed(...);
   return 0;
 }
