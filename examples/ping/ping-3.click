@@ -30,7 +30,7 @@ switch[1]
 	-> responder
 
 switch[2]
-	-> ToDump(switch.dump)
+	-> ToDump(switch.pcap)
 	-> Discard
 
 
