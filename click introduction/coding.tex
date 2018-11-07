@@ -850,13 +850,15 @@ Use \lstinline!add_read_handler! and \lstinline!add_write_handler!
 \begin{lstlisting}
 class WriteElement: public Element{
   public:
-    static int handle(Vector<String> &conf, Element *e, void * thunk, ErrorHandler * errh);
+    static int handle(const String &conf, Element *e, void * thunk, ErrorHandler * errh);
     void add_handlers();
 }
 
-int WriteElement::handle(Vector<String> &conf, Element *e, void * thunk, ErrorHandler * errh){
+int WriteElement::handle(const String &conf, Element *e, void * thunk, ErrorHandler * errh){
   WriteElement * me = (WriteElement *) e;
-  if(Args(conf, me, errh).read(...).complete()  < 0) return -1;
+  Vector<String> vconf;
+  cp_argvec(conf, vconf)
+  if(Args(vconf, me, errh).read(...).complete()  < 0) return -1;
   return 0;
 }
 \end{lstlisting}
